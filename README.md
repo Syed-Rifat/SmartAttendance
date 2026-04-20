@@ -1,318 +1,243 @@
 # Smart Attendance System
 
-[![.NET Core](https://img.shields.io/badge/.NET-8.0-blueviolet)](https://dotnet.microsoft.com)
-[![SQL Server](https://img.shields.io/badge/SQL%20Server-2019%2B-CC2927)](https://www.microsoft.com/en-us/sql-server/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen)](https://github.com)
+A role-based attendance management system built with **ASP.NET Core MVC** and **SQL Server**.
 
-## Overview
+## Features
 
-**Smart Attendance System** is an enterprise-grade, role-based attendance management solution built with ASP.NET Core MVC. It provides comprehensive tools for educational institutions to efficiently manage course enrollment, track student attendance, and generate analytics dashboards. The system supports three distinct user roles—**Admin**, **Teacher**, and **Student**—each with dedicated features and workflows.
-
-### Key Capabilities
-
-| Capability | Description |
-|------------|------------|
-| **Multi-Role Architecture** | Independent dashboards and permissions for Admin, Teacher, and Student roles |
-| **Flexible Authentication** | Login via Username, Email, or Student Code with secure BCrypt password hashing |
-| **Intelligent Tracking** | Real-time attendance marking with present/absent/late status options |
-| **Advanced Analytics** | Automated attendance percentage calculations with low-threshold alerts |
-| **Audit Trail** | Complete activity logging for compliance and system monitoring |
+- **Multi-Role Support**: Admin, Teacher, Student dashboards
+- **Attendance Tracking**: Mark present/absent/late per class
+- **Analytics**: Real-time attendance calculations with alerts
+- **Flexible Login**: Username, Email, or Student Code
+- **Activity Logging**: Complete audit trail
+- **Report Export**: PDF and Excel support
 
 ---
 
-## Table of Contents
+## Project Structure
 
-- [System Architecture](#system-architecture)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Database Configuration](#database-configuration)
-  - [Running the Application](#running-the-application)
-- [Authentication & Authorization](#authentication--authorization)
-- [User Roles & Capabilities](#user-roles--capabilities)
-- [Technology Stack](#technology-stack)
-- [Database Design](#database-design)
-- [Troubleshooting Guide](#troubleshooting-guide)
-- [Configuration](#configuration)
+```
+SmartAttendance/
+├── Controllers/              # HTTP request handlers
+│   ├── AccountController.cs  # Login & Authentication
+│   ├── AdminController.cs    # Admin dashboard & management
+│   ├── TeacherController.cs  # Attendance marking
+│   ├── StudentController.cs  # Student dashboard
+│   └── HomeController.cs     # Home page
+│
+├── Models/                   # Data models
+│   ├── Entities/             # Database entities
+│   │   ├── User.cs
+│   │   ├── Student.cs
+│   │   ├── Teacher.cs
+│   │   ├── Course.cs
+│   │   ├── CourseAssignment.cs
+│   │   ├── Enrollment.cs
+│   │   ├── AttendanceRecord.cs
+│   │   ├── ActivityLog.cs
+│   │   └── ErrorViewModel.cs
+│   │
+│   └── ViewModels/           # Request/Response models
+│       ├── LoginViewModel.cs
+│       ├── RegisterViewModel.cs
+│       ├── AttendanceViewModel.cs
+│       ├── StudentViewModel.cs
+│       └── ... (other ViewModels)
+│
+├── Data/
+│   └── AppDbContext.cs       # Entity Framework context
+│
+├── Repositories/             # Data access layer
+│   ├── Interfaces/
+│   │   ├── IRepository.cs
+│   │   └── IUnitOfWork.cs
+│   └── Implementations/
+│       ├── Repository.cs
+│       └── UnitOfWork.cs
+│
+├── Services/                 # Business logic layer
+│   ├── Interfaces/
+│   │   ├── IAttendanceService.cs
+│   │   ├── IActivityLogService.cs
+│   │   └── IReportService.cs
+│   └── Implementations/
+│       ├── AttendanceService.cs
+│       ├── ActivityLogService.cs
+│       └── ReportService.cs
+│
+├── Patterns/                 # Design patterns
+│   ├── Factory/
+│   │   ├── IReportExporter.cs
+│   │   ├── ExcelReportExporter.cs
+│   │   ├── PdfReportExporter.cs
+│   │   └── ReportExporterFactory.cs
+│   └── Singleton/
+│       └── AppSettings.cs
+│
+├── Filters/
+│   └── ActivityLogFilter.cs  # Audit trail logging
+│
+├── Views/                    # Razor templates
+│   ├── Account/
+│   │   ├── Login.cshtml
+│   │   ├── Register.cshtml
+│   │   └── Settings.cshtml
+│   ├── Admin/
+│   ├── Teacher/
+│   ├── Student/
+│   ├── Home/
+│   └── Shared/
+│
+├── wwwroot/                  # Static files
+│   ├── css/
+│   ├── js/
+│   └── lib/
+│
+├── Migrations/               # EF Core migrations
+├── Database/
+│   └── SmartAttendanceDB.sql # Database script
+│
+├── Properties/
+│   └── launchSettings.json
+│
+├── appsettings.json          # Configuration
+├── Program.cs                # Application entry point
+└── SmartAttendance.csproj    # Project file
+```
 
 ---
 
-## System Architecture
-
-This solution implements a layered architecture pattern with clear separation of concerns:
-
-```
-Presentation Layer (Views/Controllers)
-         ↓
-Business Logic Layer (Services)
-         ↓
-Data Access Layer (Repositories/UnitOfWork)
-         ↓
-Data Layer (Entity Framework Core → SQL Server)
-```
-
-### Project Directory Structure
-
-│   ├── Views/             # Razor view templates for the UI
-│   └── wwwroot/           # Static files (CSS, JS, images, libraries)
-```
-
----
-
-## Getting Started
+## Setup Instructions
 
 ### Prerequisites
 
-Before proceeding with installation, ensure you have the following prerequisites installed:
+- **.NET 8 SDK** or later
+- **SQL Server** 2019 Express or above
+- **SQL Server Management Studio (SSMS)** or Azure Data Studio
+- **Visual Studio 2022** or VS Code
 
-| Component | Requirement | Link |
-|-----------|------------|------|
-| **.NET SDK** | .NET 8.0 or later | [Download](https://dotnet.microsoft.com/download) |
-| **SQL Server** | SQL Server 2019 or Express Edition | [Download](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) |
-| **SQL Management Tool** | SSMS or Azure Data Studio | [SSMS](https://learn.microsoft.com/sql/ssms/download-sql-server-management-studio-ssms) |
-| **IDE** | Visual Studio 2022 or VS Code | [Visual Studio](https://visualstudio.microsoft.com/vs/) |
+### Step 1: Clone Repository
 
-### Installation
-
-#### Step 1: Clone Repository
-**Note:** The project includes a complete pre-configured SQL script. **Do not run EF Core migrations** (`dotnet ef database update`).
-
-**Procedure:**
-
-1. Open **SQL Server Management Studio (SSMS)** or **Azure Data Studio**
-2. Connect to your SQL Server instance (e.g., `localhost\SQLEXPRESS`)
-3. Open and execute `Database/SmartAttendanceDB.sql`
-   
-   This script will automatically:
-   - ✓ Create `SmartAttendanceDB` database
-   - ✓ Create all normalized tables with FK constraints
-   - ✓ Deploy database views for analytics
-   - ✓ Initialize default Admin user
-
-4. **Update Connection String** in `appsettings.json`:
-
-   ```json
-   "ConnectionStrings": {
-     "Default": "Server=localhost\\SQLEXPRESS;Database=SmartAttendanceDB;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"
-   }
-   ```
-   
-   > Adjust `Server` value to match your SQL Server instance name.
-
-#### Step 3: Running the Application
-
-Once the database is initialized, launch the application using one of these methods:
-
-**Option A: Using Visual Studio**
-```
-1. Open SmartAttendance.sln
-2. Press F5 or Ctrl+F5
-3. Application will launch at https://localhost:<port>
+```bash
+git clone https://github.com/Syed-Rifat/SmartAttendance.git
+cd SmartAttendance
 ```
 
-**Option B: Using Command Line**
+### Step 2: Setup Database
+
+1. Open **SQL Server Management Studio (SSMS)**
+2. Connect to your SQL Server instance
+3. Open `Database/SmartAttendanceDB.sql`
+4. Execute the script
+   - Creates `SmartAttendanceDB` database
+   - Creates all tables and relationships
+   - Creates views for calculations
+   - Inserts default Admin user
+
+### Step 3: Update Connection String
+
+Edit `appsettings.json`:
+
+```json
+"ConnectionStrings": {
+  "Default": "Server=localhost\\SQLEXPRESS;Database=SmartAttendanceDB;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"
+}
+```
+
+Update `Server` value to match your SQL Server instance name.
+
+### Step 4: Run Application
+
+**Using Visual Studio:**
+- Open `SmartAttendance.sln`
+- Press F5 or Ctrl+F5
+
+**Using Command Line:**
 ```bash
 dotnet build
 dotnet run
 ```
 
+Application will run at `https://localhost:xxxx`
+
 ---
 
-## Authentication & Authorization
+## Login Credentials
 
-### Default Admin Credentials
-
-Upon successful database initialization, the following admin account is created:
+### Admin Account (Default)
 
 | Field | Value |
-|:------|:------|
-| **Username** | `admin` |
-| **Email** | `admin@attendance.edu` |
-| **Password** | `Admin@123` |
-| **Role** | Administrator |
+|-------|-------|
+| **Username** | admin |
+| **Email** | admin@attendance.edu |
+| **Password** | Admin@123 |
+| **Role** | Admin |
 
-### Login Methods
+### Login Options
 
-Users can authenticate using any of the following identifiers:
-
-- **Username:** `admin`
-- **Email Address:** `admin@attendance.edu`  
-- **Student Code** (Students only): e.g., `CSE-2021-042`
+- Username: `admin`
+- Email: `admin@attendance.edu`
+- Student Code (for students): e.g., `CSE-2021-042`
 
 ---
 
-## User Roles & Capabilities
+## User Roles
 
-### 🔐 Administrator Dashboard
+### Administrator
+- Manage courses and sections
+- Manage teachers and students
+- Bulk upload students
+- Assign teachers to courses
+- Enroll students
+- View activity logs
+- Configure system settings
 
-Administrators have complete system control with comprehensive management capabilities:
+### Teacher
+- View assigned courses and students
+- Mark attendance per class
+- View attendance records
+- Monitor low attendance students
+- Export reports
 
-| Function | Capabilities |
-|----------|--------------|
-| **Course Management** | Create, update, and delete courses with credit hours allocation |
-| **User Management** | Manage teachers and students, assign roles, enable/disable accounts |
-| **Enrollment** | Enroll students in courses, bulk upload functionality |
-| **Assignments** | Assign teachers to courses and sections |
-| **Monitoring** | View activity logs, system health metrics, user audit trail |
-| **Configuration** | Manage system settings and attendance thresholds |
-
-### 👨‍🏫 Teacher Dashboard
-
-Teachers have access to attendance marking and reporting features:
-
-| Function | Capabilities |
-|----------|--------------|
-| **Course Overview** | View assigned courses and student enrollments |
-| **Attendance Marking** | Mark daily attendance with status options (Present/Absent/Late) |
-| **Attendance Reports** | View and export student attendance records |
-| **Analytics** | Monitor class attendance patterns and identify at-risk students |
-| **Low Attendance Alert** | Automatic identification of students below threshold |
-
-### 👨‍🎓 Student Dashboard
-
-Students have self-service access to their attendance information:
-
-| Function | Capabilities |
-|----------|--------------|
-| **Attendance View** | Monitor personal attendance records per course |
-| **Percentage Tracking** | View calculated attendance percentage |
-| **Alert System** | Receive notifications for below-threshold attendance |
-| **Report Export** | Download attendance reports for personal records |
-
----
-
-### 7. Core Features
-
-#### **Intelligent Attendance Tracking**
-- Flexible status options: Present, Absent, Late
-- Per-student, per-course tracking with date validation
-- Automatic percentage calculations using database views
-- Real-time low attendance alerts (threshold-based)
-
-#### **Enterprise-Grade Security**
-- BCrypt password hashing with salt
-- Role-based access control (RBAC)
-- Secure session management with cookies
-- Complete activity audit logging
-
-#### **Advanced Reporting**
-- PDF and Excel export capabilities
-- Bulk operation support for data import
-- Customizable attendance reports
-- Analytics dashboard with visual charts
+### Student
+- View personal attendance
+- Check attendance percentage per course
+- Receive low attendance alerts
+- Export attendance records
 
 ---
 
 ## Technology Stack
 
-### Backend Architecture
-
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **Presentation** | ASP.NET Core MVC | Web framework and request handling |
-| **Business Logic** | Service Layer | Encapsulation of business rules |
-| **Data Access** | Repository Pattern, Unit of Work | ORM abstraction and transaction management |
-| **Database** | Entity Framework Core 8.0 | ORM for database operations |
-
-### Technology Details
-
-```
-┌─────────────────────────────────────────────┐
-│   Framework: ASP.NET Core MVC (.NET 8.0)    │
-├─────────────────────────────────────────────┤
-│   Database: SQL Server 2019+                │
-│   ORM: Entity Framework Core                │
-│   Authentication: BCrypt.Net-Next           │
-│   Architecture Pattern: Repository + SOLID  │
-│   Frontend: HTML5, CSS3, JavaScript, Razor  │
-│   Session Management: ASP.NET Core Identity │
-└─────────────────────────────────────────────┘
-```
-
-```
+| Component | Technology |
+|-----------|-----------|
+| **Framework** | ASP.NET Core MVC 8.0 |
+| **Database** | SQL Server 2019+ |
+| **ORM** | Entity Framework Core |
+| **Password Hashing** | BCrypt.Net |
+| **Frontend** | HTML5, CSS3, JavaScript, Razor Pages |
+| **Architecture** | Repository Pattern + Unit of Work |
 
 ---
 
-## Database Design
+## Database Tables
 
-### Entity Relationship Diagram (Logical)
-
-```
-Users (1) ──── (1) Students
-Users (1) ──── (1) Teachers
-Teachers (1) ──── (M) CourseAssignments
-Courses (1) ──── (M) CourseAssignments
-CourseAssignments (1) ──── (M) Enrollments
-CourseAssignments (1) ──── (M) AttendanceRecords
-Students (1) ──── (M) Enrollments
-Enrollments (1) ──── (M) AttendanceRecords
-Users (1) ──── (M) ActivityLogs
-```
-
-### Data Tables Overview
-
-| Table | Purpose | Key Relationships |
-|-------|---------|-------------------|
-| **Users** | Authentication & authorization | PK: UserId |
-| **Students** | Student information | FK: UserId |
-| **Teachers** | Teacher information | FK: UserId |
-| **Courses** | Course catalog | PK: CourseId |
-| **CourseAssignments** | Teacher-Course-Section mapping | FK: TeacherId, CourseId |
-| **Enrollments** | Student-Course registration | FK: StudentId, AssignmentId |
-| **AttendanceRecords** | Daily attendance tracking | FK: EnrollmentId, AssignmentId |
-| **ActivityLogs** | System audit trail | FK: UserId |
-
-**Performance Optimizations:**
-- Indexed columns: Department, Batch, Enrollment, Assignment, AttendanceDate
-- View-based calculations for attendance percentages
-- Stored procedures for complex queries
-
----
-
-## Troubleshooting Guide
-
-### Authentication Issues
-
-| Issue | Probable Cause | Solution |
-|-------|---|---|
-| "Invalid Username or Password" | User not found or wrong credentials | Verify database is initialized; check user exists in Users table |
-| "Access Denied" (post-login) | Role mismatch or permission issue | Ensure Role in Users table matches selected login role |
-| "Account is inactive" | User IsActive flag set to 0 | Re-enable user via Admin panel or database |
-
-### Database Connectivity
-
-| Issue | Probable Cause | Solution |
-|-------|---|---|
-| Connection timeout | SQL Server not running | Start SQL Server service: `sqlservermanager` |
-| "Cannot find server" | Invalid server name in connection string | Verify server name matches `(local)\SQLEXPRESS` or your instance |
-| Permission denied | Trusted connection not enabled | Enable "Trusted_Connection=True" in connection string |
-| Database not found | SQL script not executed | Execute `Database/SmartAttendanceDB.sql` in SSMS |
-
-### Application Launch Issues
-
-| Issue | Solution |
-|-------|----------|
-| Build fails with dependency errors | Run `dotnet restore` to download NuGet packages |
-| Port already in use | Change port in `Properties/launchSettings.json` |
-| HTTPS certificate error | Use `dotnet dev-certs https --trust` |
-
-**Diagnostic Command:**
-```bash
-# Full rebuild with verbose output
-dotnet clean
-dotnet restore
-dotnet build --verbosity detailed
-dotnet run --verbosity information
-```
+| Table | Purpose |
+|-------|---------|
+| Users | Authentication & roles |
+| Students | Student information |
+| Teachers | Teacher information |
+| Courses | Course catalog |
+| CourseAssignments | Teacher-Course-Section mapping |
+| Enrollments | Student-Course registration |
+| AttendanceRecords | Daily attendance tracking |
+| ActivityLogs | System audit trail |
 
 ---
 
 ## Configuration
 
-### Application Settings (`appsettings.json`)
+### appsettings.json
 
-**Connection String Configuration:**
 ```json
 {
   "ConnectionStrings": {
@@ -320,145 +245,104 @@ dotnet run --verbosity information
   },
   "AppSettings": {
     "MinAttendanceThreshold": 75.0
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
   }
 }
 ```
 
-### Key Configuration Parameters
+**Key Settings:**
+- `MinAttendanceThreshold`: Attendance % for low attendance alerts (default: 75%)
+- `Server`: SQL Server instance name
+- `Trusted_Connection`: Use Windows authentication
 
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `MinAttendanceThreshold` | 75.0 | Attendance percentage below which students trigger alerts |
-| `Trusted_Connection` | True | Use Windows authentication (disable for SQL Server auth) |
-| `MultipleActiveResultSets` | true | Allow multiple concurrent operations on connection |
-| `TrustServerCertificate` | True | Accept self-signed SSL certificates |
+---
 
-**Example: Changing Attendance Threshold**
-```json
-"AppSettings": {
-  "MinAttendanceThreshold": 80.0  // Changes threshold to 80%
-}
+## Troubleshooting
+
+### Database Connection Error
+- Verify SQL Server is running
+- Check connection string matches your server name
+- Run SQL script in SSMS
+- Ensure database `SmartAttendanceDB` is created
+
+### Login Fails
+- Verify database is initialized
+- Check `Users` table has admin record
+- Ensure role matches selected login role
+
+### Application Won't Start
+```bash
+# Clear cache and rebuild
+dotnet clean
+dotnet build
+
+# Restore dependencies
+dotnet restore
+
+# Run with debug info
+dotnet run --verbosity Debug
 ```
 
 ---
 
-## Development Workflow
+## Key Features Explained
 
-The recommended workflow for different user types:
+### Attendance Marking
+- Teachers mark attendance with: Present, Absent, Late
+- System auto-calculates attendance percentage
+- Real-time alerts for students below threshold (75%)
 
-```
-┌─────────────────────────────────────────────────────────┐
-│  ADMIN WORKFLOW                                         │
-├─────────────────────────────────────────────────────────┤
-│ 1. Login with admin credentials                         │
-│ 2. Create courses in the system                         │
-│ 3. Add teachers and students (bulk or individual)       │
-│ 4. Assign teachers to courses and sections              │
-│ 5. Enroll students in courses                           │
-│ 6. Monitor activity logs and system health              │
-└─────────────────────────────────────────────────────────┘
+### Role-Based Access
+- Each role has separate dashboard
+- Controllers check authorization before processing
+- Activity logged for all actions
 
-┌─────────────────────────────────────────────────────────┐
-│  TEACHER WORKFLOW                                       │
-├─────────────────────────────────────────────────────────┤
-│ 1. Login with teacher credentials                       │
-│ 2. View assigned courses and enrolled students          │
-│ 3. Mark attendance for each class session               │
-│ 4. Monitor student attendance records                   │
-│ 5. Export attendance reports for records                │
-│ 6. Identify and flag at-risk students                   │
-└─────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────┐
-│  STUDENT WORKFLOW                                       │
-├─────────────────────────────────────────────────────────┤
-│ 1. Login using student code or email                    │
-│ 2. View personal attendance dashboard                   │
-│ 3. Check attendance % per enrolled course               │
-│ 4. Receive alerts for below-threshold attendance        │
-│ 5. Export attendance records when needed                │
-└─────────────────────────────────────────────────────────┘
-```
+### Security
+- Passwords hashed with BCrypt
+- Session-based authentication
+- Complete activity audit trail
+- SQL injection prevention via EF Core
 
 ---
 
-## Security Considerations
+## Common Tasks
 
-### Best Practices Implemented
+### Add New Student
+1. Login as Admin
+2. Go to Students → Add Student
+3. Fill student details
+4. Assign to courses via Enrollments
 
-✅ **Password Security**
-- BCrypt hashing with salt
-- No plaintext password storage
-- Configurable hash rounds for future updates
+### Mark Attendance
+1. Login as Teacher
+2. Go to My Classes
+3. Select course and date
+4. Mark attendance for each student
+5. Submit
 
-✅ **Access Control**
-- Role-based authorization at controller level
-- Claims-based identity management
-- Session management via secure cookies
-
-✅ **Audit & Compliance**
-- Complete activity logging
-- User action tracking with timestamps
-- Accountability trail for attendance changes
-
-### Recommended Production Steps
-
-1. Change default admin password immediately after deployment
-2. Enable HTTPS only (configure SSL certificate)
-3. Set up database backups and recovery procedures
-4. Implement IP whitelisting if necessary
-5. Monitor activity logs regularly
-6. Use strong SQL Server authentication in production
+### View Attendance (Student)
+1. Login as Student
+2. Go to My Attendance
+3. View attendance per course
+4. Check percentage and alerts
+5. Download report if needed
 
 ---
 
-## Performance & Scalability
+## Support
 
-### Database Optimization
-
-- **Indexes:** Implemented on frequently queried columns (Department, StudentId, AssignmentId, AttendanceDate)
-- **Views:** Pre-calculated attendance summaries reduce query complexity
-- **Normalization:** 3NF schema design prevents data redundancy
-- **Connection Pooling:** MARS enabled for concurrent operations
-
-### Scalability Recommendations
-
-For institutions with 5,000+ students:
-- Implement database archiving for historical records
-- Consider SQL Server Enterprise Edition
-- Set up read replicas for reporting queries
-- Implement caching for dashboard data
+For issues or questions, refer to:
+- Code comments in Controllers and Services
+- Database schema in `Database/SmartAttendanceDB.sql`
+- Error logs in `bin/Debug/` or `bin/Release/`
 
 ---
-
-## Support & Maintenance
-
-### Getting Help
-
-If you encounter issues:
-
-1. **Check Logs:** Review application logs in `bin/Debug/` or `bin/Release/`
-2. **Database Verification:** Validate schema and data integrity via SSMS
-3. **Documentation:** Refer to code comments in Controllers and Services
-4. **Community:** Report issues or seek help through project repository
-
-### Regular Maintenance Tasks
-
-| Task | Frequency | Purpose |
-|------|-----------|---------|
-| Database Backup | Daily | Disaster recovery |
-| Activity Log Cleanup | Monthly | Storage optimization |
-| Password Updates | Quarterly | Security refresh |
-| Dependency Updates | Quarterly | Security patches |
-
----
-
-## License & Attribution
-
-This project is provided as-is for educational and institutional use. For licensing details, see LICENSE file.
 
 **Built with:** .NET 8.0 | SQL Server | Entity Framework Core | ASP.NET Core MVC
 
----
-
-**Last Updated:** April 2026 | Version 1.0
+**Version:** 1.0 | **Last Updated:** April 2026
