@@ -1,0 +1,56 @@
+@model SmartAttendance.Models.ViewModels.CourseAssignmentViewModel
+@{
+    ViewData["Title"] = "Assign Course";
+}
+
+<div class="card-custom">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0"><i class="bi bi-diagram-3-fill text-info"></i> Assign Course to Teacher</h5>
+        <a asp-action="Assignments" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Back</a>
+    </div>
+    <form asp-action="CreateAssignment" method="post">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger small" style="display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none")"></div>
+        <div class="border rounded p-3 mb-3" style="background: #f8f9fa;">
+            <h6 class="text-muted mb-3"><i class="bi bi-link-45deg"></i> Assignment</h6>
+            <div class="row">
+                <div class="col-md-6 mb-2">
+                    <label asp-for="TeacherId" class="form-label small fw-semibold">Teacher <span class="text-danger">*</span></label>
+                    <select asp-for="TeacherId" asp-items="Model.Teachers" class="form-select"><option value="">-- Select --</option></select>
+                </div>
+                <div class="col-md-6 mb-2">
+                    <label asp-for="CourseId" class="form-label small fw-semibold">Course <span class="text-danger">*</span></label>
+                    <select asp-for="CourseId" asp-items="Model.Courses" class="form-select"><option value="">-- Select --</option></select>
+                </div>
+            </div>
+        </div>
+        <div class="border rounded p-3 mb-3">
+            <h6 class="text-muted mb-3"><i class="bi bi-calendar-event"></i> Schedule</h6>
+            <div class="row">
+                <div class="col-md-2 mb-2">
+                    <label asp-for="Section" class="form-label small fw-semibold">Section *</label>
+                    <input asp-for="Section" class="form-control" placeholder="A" />
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label asp-for="Semester" class="form-label small fw-semibold">Semester *</label>
+                    <input asp-for="Semester" class="form-control" placeholder="Spring 2025" />
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label asp-for="AcademicYear" class="form-label small fw-semibold">Year *</label>
+                    <input asp-for="AcademicYear" class="form-control" placeholder="2024-25" />
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label asp-for="Room" class="form-label small fw-semibold">Room</label>
+                    <input asp-for="Room" class="form-control" placeholder="301" />
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label asp-for="Schedule" class="form-label small fw-semibold">Schedule</label>
+                    <input asp-for="Schedule" class="form-control" placeholder="Mon/Wed 10:00" />
+                </div>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-info text-white"><i class="bi bi-check-circle"></i> Assign</button>
+            <a asp-action="Assignments" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+    </form>
+</div>

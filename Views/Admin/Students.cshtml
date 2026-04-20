@@ -1,0 +1,45 @@
+@model IEnumerable<SmartAttendance.Models.ViewModels.StudentViewModel>
+@{
+    ViewData["Title"] = "Manage Students";
+}
+
+<div class="card-custom">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0"><i class="bi bi-people"></i> Students</h5>
+        <div>
+            <a asp-action="CreateStudent" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Add Student</a>
+            <a asp-action="Dashboard" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Dashboard</a>
+        </div>
+    </div>
+
+    <table class="table table-hover table-sm">
+        <thead class="table-light">
+            <tr>
+                <th>Student Code</th>
+                <th>Name</th>
+                <th>Department</th>
+                <th>Batch</th>
+                <th>Section</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var student in Model)
+            {
+                <tr>
+                    <td>@student.StudentCode</td>
+                    <td>@student.FullName</td>
+                    <td>@student.Department</td>
+                    <td>@student.Batch</td>
+                    <td>@student.Section</td>
+                    <td>
+                        <a asp-action="EditStudent" asp-route-id="@student.StudentId" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil"></i></a>
+                        <form asp-action="DeleteStudent" asp-route-id="@student.StudentId" method="post" style="display:inline;" onsubmit="return confirm('Delete this student?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

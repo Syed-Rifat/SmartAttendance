@@ -1,0 +1,89 @@
+@model SmartAttendance.Models.ViewModels.ProfileSettingsViewModel
+@{
+    ViewData["Title"] = "Settings";
+}
+
+<div class="row g-4">
+    <!-- Profile Info -->
+    <div class="col-md-6">
+        <div class="card-custom">
+            <h5 class="mb-3"><i class="bi bi-person-gear text-primary"></i> Profile Information</h5>
+
+            <form asp-controller="Account" asp-action="UpdateProfile" method="post">
+                <div class="border rounded p-3 mb-3" style="background: #f8f9fa;">
+                    <div class="row mb-2">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted">Username</label>
+                            <input class="form-control" value="@Model.Username" disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted">Email</label>
+                            <input class="form-control" value="@Model.Email" disabled />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label class="form-label small fw-semibold text-muted">Role</label>
+                            <input class="form-control" value="@Model.Role" disabled />
+                        </div>
+                    </div>
+                </div>
+
+                @if (Model.Role == "Student" || Model.Role == "Teacher")
+                {
+                    <div class="border rounded p-3 mb-3">
+                        <h6 class="text-muted mb-3"><i class="bi bi-pencil"></i> Editable Info</h6>
+                        <div class="row mb-2">
+                            <div class="col-md-6">
+                                <label asp-for="FullName" class="form-label small fw-semibold">Full Name</label>
+                                <input asp-for="FullName" class="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Department" class="form-label small fw-semibold">Department</label>
+                                <input asp-for="Department" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label asp-for="ContactNumber" class="form-label small fw-semibold">Contact Number</label>
+                                <input asp-for="ContactNumber" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Update Profile</button>
+                }
+            </form>
+        </div>
+    </div>
+
+    <!-- Change Password -->
+    <div class="col-md-6">
+        <div class="card-custom">
+            <h5 class="mb-3"><i class="bi bi-shield-lock text-danger"></i> Change Password</h5>
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger small"><i class="bi bi-exclamation-triangle"></i> @TempData["Error"]</div>
+            }
+
+            <form asp-controller="Account" asp-action="ChangePassword" method="post">
+                <div class="border rounded p-3 mb-3">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Current Password <span class="text-danger">*</span></label>
+                        <input name="CurrentPassword" type="password" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">New Password <span class="text-danger">*</span></label>
+                        <input name="NewPassword" type="password" class="form-control" minlength="6" required />
+                        <small class="text-muted">Minimum 6 characters</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Confirm New Password <span class="text-danger">*</span></label>
+                        <input name="ConfirmPassword" type="password" class="form-control" required />
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-danger"><i class="bi bi-key"></i> Change Password</button>
+            </form>
+        </div>
+    </div>
+</div>

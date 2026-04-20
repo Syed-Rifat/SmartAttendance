@@ -1,0 +1,45 @@
+@model IEnumerable<SmartAttendance.Models.Entities.CourseAssignment>
+@{
+    ViewData["Title"] = "Teacher Dashboard";
+}
+
+<h2>Teacher Dashboard</h2>
+<p>Your Assigned Courses:</p>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No courses assigned currently.</div>
+}
+else
+{
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>Course ID</th>
+                <th>Section</th>
+                <th>Semester</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ca in Model)
+            {
+                <tr>
+                    <td>@ca.CourseId</td>
+                    <td>@ca.Section</td>
+                    <td>@ca.Semester</td>
+                    <td>
+                        <a asp-action="TakeAttendance" asp-route-assignmentId="@ca.AssignmentId" class="btn btn-sm btn-primary">Take Attendance</a>
+                        <form method="get" asp-action="EditAttendance" style="display:inline;">
+                            <input type="hidden" name="assignmentId" value="@ca.AssignmentId" />
+                            <input type="date" name="date" class="form-control d-inline-block form-control-sm" style="width:auto;" required />
+                            <button type="submit" class="btn btn-sm btn-warning">Edit</button>
+                        </form>
+                        <a asp-action="LowAttendance" asp-route-assignmentId="@ca.AssignmentId" class="btn btn-sm btn-danger">Low Attendance</a>
+                        <a asp-action="ExportAttendance" asp-route-assignmentId="@ca.AssignmentId" class="btn btn-sm btn-success">Export</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

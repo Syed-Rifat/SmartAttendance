@@ -1,0 +1,99 @@
+@model SmartAttendance.Models.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <p>Total Students</p>
+                    <h3>@Model.TotalStudents</h3>
+                </div>
+                <div class="icon text-primary"><i class="bi bi-people-fill"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <p>Total Teachers</p>
+                    <h3>@Model.TotalTeachers</h3>
+                </div>
+                <div class="icon text-success"><i class="bi bi-person-badge-fill"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <p>Total Courses</p>
+                    <h3>@Model.TotalCourses</h3>
+                </div>
+                <div class="icon text-warning"><i class="bi bi-book-fill"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <p>Today's Attendance</p>
+                    <h3>@Model.TodayAttendanceCount</h3>
+                </div>
+                <div class="icon text-info"><i class="bi bi-check2-square"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card-custom text-center">
+            <h5><i class="bi bi-people text-primary"></i> Students</h5>
+            <a asp-action="Students" class="btn btn-primary btn-sm w-100 mb-2">View All Students</a>
+            <a asp-action="CreateStudent" class="btn btn-outline-primary btn-sm w-100 mb-2">Add New Student</a>
+            <a asp-action="BulkUploadStudents" class="btn btn-outline-secondary btn-sm w-100">Bulk Upload CSV</a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-custom text-center">
+            <h5><i class="bi bi-person-badge text-success"></i> Teachers</h5>
+            <a asp-action="Teachers" class="btn btn-success btn-sm w-100 mb-2">View All Teachers</a>
+            <a asp-action="CreateTeacher" class="btn btn-outline-success btn-sm w-100">Add New Teacher</a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-custom text-center">
+            <h5><i class="bi bi-book text-warning"></i> Courses</h5>
+            <a asp-action="Courses" class="btn btn-warning btn-sm w-100 mb-2">View All Courses</a>
+            <a asp-action="CreateCourse" class="btn btn-outline-warning btn-sm w-100">Add New Course</a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-md-4">
+        <div class="card-custom text-center">
+            <h5><i class="bi bi-diagram-3 text-info"></i> Assignments</h5>
+            <a asp-action="Assignments" class="btn btn-info btn-sm w-100 mb-2 text-white">View Assignments</a>
+            <a asp-action="CreateAssignment" class="btn btn-outline-info btn-sm w-100">Assign Course</a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-custom text-center">
+            <h5><i class="bi bi-person-plus text-secondary"></i> Enrollments</h5>
+            <a asp-action="Enrollments" class="btn btn-secondary btn-sm w-100 mb-2">View Enrollments</a>
+            <a asp-action="CreateEnrollment" class="btn btn-outline-secondary btn-sm w-100">Enroll Student</a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-custom text-center">
+            <h5><i class="bi bi-clock-history text-dark"></i> System</h5>
+            <a asp-action="ActivityLogs" class="btn btn-dark btn-sm w-100">View Activity Logs</a>
+        </div>
+    </div>
+</div>

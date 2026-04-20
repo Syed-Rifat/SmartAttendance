@@ -1,0 +1,52 @@
+@model SmartAttendance.Models.ViewModels.AttendanceViewModel
+@{
+    ViewData["Title"] = "Take Attendance";
+}
+
+<h2>Take Attendance - @Model.CourseName (Section: @Model.Section)</h2>
+<h4>Date: @Model.AttendanceDate.ToString("yyyy-MM-dd")</h4>
+
+<form asp-action="TakeAttendance" method="post">
+    <input type="hidden" asp-for="AssignmentId" />
+    <input type="hidden" asp-for="AttendanceDate" />
+
+    <table class="table table-striped mt-4">
+        <thead>
+            <tr>
+                <th>Student Code</th>
+                <th>Name</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Students.Count; i++)
+            {
+                <tr>
+                    <td>
+                        <input type="hidden" asp-for="Students[i].EnrollmentId" />
+                        <input type="hidden" asp-for="Students[i].StudentId" />
+                        @Model.Students[i].StudentCode
+                    </td>
+                    <td>@Model.Students[i].FullName</td>
+                    <td>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" asp-for="Students[i].Status" value="Present" id="present_@i" checked="@(Model.Students[i].Status == "Present")" />
+                            <label class="form-check-label" for="present_@i">Present</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" asp-for="Students[i].Status" value="Absent" id="absent_@i" checked="@(Model.Students[i].Status == "Absent")" />
+                            <label class="form-check-label" for="absent_@i">Absent</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" asp-for="Students[i].Status" value="Late" id="late_@i" checked="@(Model.Students[i].Status == "Late")" />
+                            <label class="form-check-label" for="late_@i">Late</label>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button type="submit" class="btn btn-success mt-3">Submit Attendance</button>
+    <a asp-action="Dashboard" class="btn btn-secondary mt-3">Cancel</a>
+</form>

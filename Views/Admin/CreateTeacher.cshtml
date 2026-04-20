@@ -1,0 +1,63 @@
+@model SmartAttendance.Models.ViewModels.TeacherViewModel
+@{
+    ViewData["Title"] = "Create Teacher";
+}
+
+<div class="card-custom">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0"><i class="bi bi-person-plus-fill text-success"></i> Add New Teacher</h5>
+        <a asp-action="Teachers" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Back to Teachers</a>
+    </div>
+
+    <form asp-action="CreateTeacher" method="post">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger small" style="display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none")"></div>
+
+        <!-- Account Info -->
+        <div class="border rounded p-3 mb-3" style="background: #f8f9fa;">
+            <h6 class="text-muted mb-3"><i class="bi bi-key"></i> Account Information</h6>
+            <div class="row">
+                <div class="col-md-4 mb-2">
+                    <label asp-for="Username" class="form-label small fw-semibold">Username <span class="text-danger">*</span></label>
+                    <input asp-for="Username" class="form-control" placeholder="e.g. teacher_jane" />
+                    <span asp-validation-for="Username" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label asp-for="Email" class="form-label small fw-semibold">Email <span class="text-danger">*</span></label>
+                    <input asp-for="Email" class="form-control" placeholder="e.g. jane@university.edu" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label asp-for="Password" class="form-label small fw-semibold">Password <span class="text-danger">*</span></label>
+                    <input asp-for="Password" class="form-control" type="password" placeholder="Min 6 characters" />
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Teacher Info -->
+        <div class="border rounded p-3 mb-3">
+            <h6 class="text-muted mb-3"><i class="bi bi-person-badge-fill"></i> Teacher Details</h6>
+            <div class="row">
+                <div class="col-md-4 mb-2">
+                    <label asp-for="FullName" class="form-label small fw-semibold">Full Name <span class="text-danger">*</span></label>
+                    <input asp-for="FullName" class="form-control" placeholder="e.g. Jane Smith" />
+                    <span asp-validation-for="FullName" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label asp-for="Department" class="form-label small fw-semibold">Department <span class="text-danger">*</span></label>
+                    <input asp-for="Department" class="form-control" placeholder="e.g. CSE" />
+                    <span asp-validation-for="Department" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label asp-for="ContactNumber" class="form-label small fw-semibold">Contact Number</label>
+                    <input asp-for="ContactNumber" class="form-control" placeholder="e.g. 01700000000" />
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Create Teacher</button>
+            <a asp-action="Teachers" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+    </form>
+</div>

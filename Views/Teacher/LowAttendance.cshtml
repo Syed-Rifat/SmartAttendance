@@ -1,0 +1,35 @@
+@model IEnumerable<SmartAttendance.Models.ViewModels.StudentSummaryItem>
+@{
+    ViewData["Title"] = "Low Attendance Students";
+}
+
+<h2>Low Attendance Alert</h2>
+<h4>@ViewBag.CourseInfo</h4>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-success mt-3">No students have low attendance!</div>
+}
+else
+{
+    <table class="table table-striped mt-3">
+        <thead>
+            <tr>
+                <th>Student Code</th>
+                <th>Name</th>
+                <th>Percentage</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var student in Model)
+            {
+                <tr class="table-danger">
+                    <td>@student.StudentCode</td>
+                    <td>@student.FullName</td>
+                    <td>@student.Percentage%</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<a asp-action="Dashboard" class="btn btn-secondary mt-3">Back to Dashboard</a>
