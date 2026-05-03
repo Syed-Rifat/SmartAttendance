@@ -1,45 +1,163 @@
-@model IEnumerable<SmartAttendance.Models.Entities.CourseAssignment>
+@model SmartAttendance.Models.ViewModels.TeacherOverviewViewModel
 @{
     ViewData["Title"] = "Teacher Dashboard";
 }
 
-<h2>Teacher Dashboard</h2>
-<p>Your Assigned Courses:</p>
+<style>
+    .hero-banner {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border-radius: 14px; padding: 18px 24px; color: #fff;
+        display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .hero-banner .greeting h5 { font-weight: 700; margin-bottom: 2px; font-size: 1.05rem; }
+    .hero-banner .greeting p { color: rgba(255,255,255,.5); font-size: 0.78rem; margin: 0; }
+    .hero-badge { background: rgba(255,255,255,.1); border-radius: 6px; padding: 3px 10px; font-size: 0.72rem; color: rgba(255,255,255,.65); display: inline-flex; align-items: center; gap: 4px; }
 
-@if (!Model.Any())
-{
-    <div class="alert alert-info">No courses assigned currently.</div>
-}
-else
-{
-    <table class="table table-bordered mt-3">
-        <thead>
-            <tr>
-                <th>Course ID</th>
-                <th>Section</th>
-                <th>Semester</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var ca in Model)
+    .vital-item {
+        display: flex; align-items: center; gap: 10px;
+        background: #fff; border-radius: 10px; padding: 10px 14px;
+        border: 1px solid #f1f5f9; box-shadow: 0 1px 2px rgba(0,0,0,.03);
+    }
+    .vital-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; flex-shrink: 0; }
+    .vital-label { font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; letter-spacing: .3px; font-weight: 600; }
+    .vital-value { font-size: 0.95rem; font-weight: 700; color: #1e293b; }
+
+    .timeline-entry { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; align-items: center; }
+    .timeline-entry:last-child { border-bottom: none; }
+    .time-pill { background: #eff6ff; color: #3b82f6; font-weight: 700; font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; white-space: nowrap; min-width: 64px; text-align: center; }
+    .timeline-entry .course-name { font-weight: 600; color: #1e293b; font-size: 0.82rem; }
+    .timeline-entry .course-meta { font-size: 0.7rem; color: #94a3b8; }
+    .room-tag { background: #fef3c7; color: #92400e; font-weight: 700; padding: 2px 8px; border-radius: 5px; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 3px; }
+
+    .panel { background: #fff; border-radius: 12px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.04); margin-bottom: 16px; }
+    .panel-title { font-weight: 700; font-size: 0.85rem; color: #1e293b; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+    .panel-title i { font-size: 0.9rem; }
+
+    .qlink {
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px 14px; border-radius: 8px; border: 1px solid #f1f5f9;
+        text-decoration: none; color: #475569; font-size: 0.8rem; font-weight: 500;
+        transition: all .2s; background: #fafbfc;
+    }
+    .qlink:hover { background: #f1f5f9; color: #1e293b; transform: translateX(3px); }
+    .qlink i { font-size: 1rem; }
+
+    .empty-day { text-align: center; padding: 20px 12px; background: #fafbfc; border-radius: 10px; border: 2px dashed #e2e8f0; }
+    .empty-day i { font-size: 1.8rem; color: #cbd5e1; }
+    .empty-day p { color: #94a3b8; font-size: 0.8rem; margin: 6px 0 0; }
+</style>
+
+<!-- ═══ HERO ═══ -->
+<div class="hero-banner mb-3">
+    <div class="greeting">
+        <h5><i class="bi bi-person-workspace me-2" style="opacity:.35"></i>@Model.TeacherName</h5>
+        <p>
+            @if (!string.IsNullOrEmpty(Model.Department))
             {
-                <tr>
-                    <td>@ca.CourseId</td>
-                    <td>@ca.Section</td>
-                    <td>@ca.Semester</td>
-                    <td>
-                        <a asp-action="TakeAttendance" asp-route-assignmentId="@ca.AssignmentId" class="btn btn-sm btn-primary">Take Attendance</a>
-                        <form method="get" asp-action="EditAttendance" style="display:inline;">
-                            <input type="hidden" name="assignmentId" value="@ca.AssignmentId" />
-                            <input type="date" name="date" class="form-control d-inline-block form-control-sm" style="width:auto;" required />
-                            <button type="submit" class="btn btn-sm btn-warning">Edit</button>
-                        </form>
-                        <a asp-action="LowAttendance" asp-route-assignmentId="@ca.AssignmentId" class="btn btn-sm btn-danger">Low Attendance</a>
-                        <a asp-action="ExportAttendance" asp-route-assignmentId="@ca.AssignmentId" class="btn btn-sm btn-success">Export</a>
-                    </td>
-                </tr>
+                <span class="hero-badge"><i class="bi bi-building"></i>@Model.Department Department</span>
             }
-        </tbody>
-    </table>
-}
+        </p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <div class="hero-badge" style="font-size: 0.8rem; padding: 6px 14px;">
+            <i class="bi bi-calendar-event"></i> @DateTime.Today.ToString("dddd, MMM d")
+        </div>
+    </div>
+</div>
+
+<!-- ═══ VITALS ═══ -->
+<div class="row g-2 mb-3">
+    <div class="col-md-4 col-6">
+        <div class="vital-item">
+            <div class="vital-icon" style="background:#eff6ff;color:#3b82f6;"><i class="bi bi-book-half"></i></div>
+            <div>
+                <div class="vital-label">Assigned Courses</div>
+                <div class="vital-value">@Model.TotalCourses</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-6">
+        <div class="vital-item">
+            <div class="vital-icon" style="background:#ecfdf5;color:#10b981;"><i class="bi bi-people-fill"></i></div>
+            <div>
+                <div class="vital-label">Total Students</div>
+                <div class="vital-value">@Model.TotalStudents</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-12">
+        <div class="vital-item">
+            <div class="vital-icon" style="background:#fef3c7;color:#f59e0b;"><i class="bi bi-calendar-day"></i></div>
+            <div>
+                <div class="vital-label">Today's Classes</div>
+                <div class="vital-value">@Model.TodayClasses.Count</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ MAIN 2-COL ═══ -->
+<div class="row g-3">
+    <div class="col-lg-8">
+        <!-- Today's Schedule -->
+        <div class="panel">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="panel-title mb-0"><i class="bi bi-sun text-warning"></i> Today — @DateTime.Today.ToString("ddd, MMM d")</div>
+                <a asp-action="MySchedule" class="small text-decoration-none text-primary fw-semibold" style="font-size:.75rem;">Full week →</a>
+            </div>
+            @if (!Model.TodayClasses.Any())
+            {
+                <div class="empty-day">
+                    <i class="bi bi-emoji-sunglasses"></i>
+                    <p>No classes today. Prepare for upcoming lectures!</p>
+                </div>
+            }
+            else
+            {
+                @foreach (var cls in Model.TodayClasses)
+                {
+                    <div class="timeline-entry">
+                        <div class="time-pill">@cls.StartTime.ToString("hh:mm tt")</div>
+                        <div style="flex:1;min-width:0;">
+                            <div class="course-name">@cls.CourseName</div>
+                            <div class="course-meta">
+                                @cls.CourseCode · Section @cls.Section · Until @cls.EndTime.ToString("hh:mm tt")
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(cls.Room))
+                        {
+                            <span class="room-tag"><i class="bi bi-geo-alt-fill"></i> @cls.Room</span>
+                        }
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <!-- ═══ SIDEBAR ═══ -->
+    <div class="col-lg-4">
+        <!-- Date Widget -->
+        <div class="panel text-center" style="background:linear-gradient(135deg,#1e293b,#334155);color:#fff;padding:14px;">
+            <div class="fw-bold" style="font-size:0.85rem;">@DateTime.Today.ToString("dddd")</div>
+            <div style="font-size:1.8rem;font-weight:800;letter-spacing:-1px;line-height:1.1;">@DateTime.Today.ToString("dd MMM")</div>
+            <div style="font-size:0.72rem;color:rgba(255,255,255,.45);">@DateTime.Today.ToString("yyyy")</div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="panel">
+            <div class="panel-title"><i class="bi bi-lightning-charge text-warning"></i> Quick Actions</div>
+            <div class="d-grid gap-2">
+                <a asp-action="MyCourses" class="qlink">
+                    <i class="bi bi-journal-text text-primary"></i>
+                    <span>My Courses</span>
+                    <i class="bi bi-chevron-right ms-auto" style="font-size:.7rem;color:#cbd5e1;"></i>
+                </a>
+                <a asp-action="MySchedule" class="qlink">
+                    <i class="bi bi-calendar-week text-success"></i>
+                    <span>Weekly Schedule</span>
+                    <i class="bi bi-chevron-right ms-auto" style="font-size:.7rem;color:#cbd5e1;"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

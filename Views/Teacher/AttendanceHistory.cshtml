@@ -1,0 +1,117 @@
+@model SmartAttendance.Models.ViewModels.TeacherAttendanceSummaryViewModel
+@{
+    ViewData["Title"] = "Attendance History";
+}
+
+<div class="card-custom">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h5 class="mb-1"><i class="bi bi-clock-history me-2"></i>Attendance History</h5>
+            <p class="text-muted mb-0">
+                <span class="badge bg-primary">@Model.CourseCode</span>
+                @Model.CourseName — Section @Model.Section | @Model.Semester
+            </p>
+        </div>
+        <a asp-action="Dashboard" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<div class="card-custom mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="mb-0"><i class="bi bi-people me-2"></i>Student Attendance Summary</h6>
+        <span class="badge bg-secondary">@Model.Students.Count students</span>
+    </div>
+
+    @if (!Model.Students.Any())
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> No students enrolled in this course yet.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle" id="historyTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width:50px;">#</th>
+                        <th>Student Code</th>
+                        <th>Full Name</th>
+                        <th class="text-center">Total Classes</th>
+                        <th class="text-center">Attended</th>
+                        <th class="text-center">Absent</th>
+                        <th class="text-center">Attendance %</th>
+                        <th class="text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ var idx = 1; }
+                    @foreach (var s in Model.Students.OrderBy(x => x.FullName))
+                    {
+                        var absent = s.TotalClasses - s.Attended;
+                        var barColor = s.Percentage >= 75 ? "#28a745" : s.Percentage >= 60 ? "#ffc107" : "#dc3545";
+                        <tr class="@(s.IsLow ? "table-danger" : "")">
+                            <td>@idx</td>
+                            <td><code>@s.StudentCode</code></td>
+                            <td>@s.FullName</td>
+                            <td class="text-center">@s.TotalClasses</td>
+                            <td class="text-center"><span class="badge bg-success">@s.Attended</span></td>
+                            <td class="text-center"><span class="badge bg-danger">@absent</span></td>
+                            <td class="text-center" style="min-width: 160px;">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="progress flex-grow-1" style="height: 8px;">
+                                        <div class="progress-bar" role="progressbar"
+                                             style="width: @s.Percentage%; background-color: @barColor;"
+                                             aria-valuenow="@s.Percentage" aria-valuemin="0" aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                    <strong style="min-width:45px;">@s.Percentage%</strong>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                @if (s.IsLow)
+                                {
+                                    <span class="badge bg-danger"><i class="bi bi-exclamation-triangle"></i> Low</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success"><i class="bi bi-check-circle"></i> OK</span>
+                                }
+                            </td>
+                        </tr>
+                        idx++;
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="stat-card text-center" style="border-left: 4px solid #28a745;">
+                    <div class="icon text-success"><i class="bi bi-people-fill"></i></div>
+                    <h3>@Model.Students.Count</h3>
+                    <p>Total Students</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card text-center" style="border-left: 4px solid #0d6efd;">
+                    @{
+                        var avgPct = Model.Students.Any() ? Math.Round(Model.Students.Average(s => s.Percentage), 1) : 0;
+                    }
+                    <div class="icon text-primary"><i class="bi bi-graph-up"></i></div>
+                    <h3>@avgPct%</h3>
+                    <p>Average Attendance</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card text-center" style="border-left: 4px solid #dc3545;">
+                    <div class="icon text-danger"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                    <h3>@Model.Students.Count(s => s.IsLow)</h3>
+                    <p>Low Attendance Students</p>
+                </div>
+            </div>
+        </div>
+    }
+</div>

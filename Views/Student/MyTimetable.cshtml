@@ -1,0 +1,145 @@
+@model IEnumerable<SmartAttendance.Models.ViewModels.ScheduleItemViewModel>
+@{
+    ViewData["Title"] = "Class Routine";
+
+    // Define days
+    var daysOfWeek = new[] { "Sun", "Mon", "Tue", "Wed", "Thu" };
+    var dayFullNames = new Dictionary<string, string> {
+        {"Sun", "Sunday"}, {"Mon", "Monday"}, {"Tue", "Tuesday"},
+        {"Wed", "Wednesday"}, {"Thu", "Thursday"}, {"Fri", "Friday"}, {"Sat", "Saturday"}
+    };
+
+    // Group items by day using structured DayOfWeek
+    var dayItems = new Dictionary<string, List<SmartAttendance.Models.ViewModels.ScheduleItemViewModel>>();
+    foreach (var d in daysOfWeek)
+    {
+        dayItems[d] = Model.Where(m =>
+            !string.IsNullOrEmpty(m.DayOfWeek) &&
+            (m.DayOfWeek.Equals(d, StringComparison.OrdinalIgnoreCase) ||
+             m.DayOfWeek.Equals(dayFullNames[d], StringComparison.OrdinalIgnoreCase))
+        ).OrderBy(m => m.StartTime).ToList();
+    }
+}
+
+<div class="card-custom mb-3">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <small class="text-muted">Your enrolled courses shown day-wise</small>
+        </div>
+        <a asp-action="Dashboard" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> You are not enrolled in any courses yet.
+    </div>
+}
+else
+{
+    <!-- Day-wise Routine Table -->
+    <div class="card-custom p-0" style="overflow: hidden;">
+        <div class="table-responsive">
+            <table class="table table-bordered mb-0" style="font-size: 0.88rem;">
+                <thead>
+                    <tr style="background: #2c3e50; color: #fff;">
+                        <th class="text-center align-middle" style="width: 100px; padding: 12px 8px;">Day</th>
+                        <th class="text-center align-middle" style="padding: 12px 8px;">Scheduled Classes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var day in daysOfWeek)
+                    {
+                        var classes = dayItems[day];
+                        var hasClasses = classes.Any();
+
+                        <tr style="@(hasClasses ? "" : "background: #fafafa;")">
+                            <td class="text-center align-middle fw-bold" style="background: #f1f3f5; vertical-align: middle;">
+                                <div style="font-size: 1rem;">@day</div>
+                                <div style="font-size: 0.7rem; color: #888;">@dayFullNames[day]</div>
+                            </td>
+                            <td style="padding: 8px;">
+                                @if (hasClasses)
+                                {
+                                    <div class="d-flex flex-wrap gap-2">
+                                        @foreach (var item in classes)
+                                        {
+                                            <div style="background: #fff; border: 1px solid #dee2e6; border-left: 4px solid #0d6efd; border-radius: 6px; padding: 10px 14px; min-width: 220px; flex: 1; max-width: 320px;">
+                                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                                    <span class="badge bg-primary" style="font-size: 0.78rem;">@item.CourseCode</span>
+                                                    <span class="badge bg-light text-dark border" style="font-size: 0.7rem;">@item.Section</span>
+                                                </div>
+                                                <div class="fw-semibold mb-1" style="font-size: 0.85rem; color: #333;">@item.CourseName</div>
+                                                <div style="font-size: 0.78rem; color: #666; line-height: 1.6;">
+                                                    @if (!string.IsNullOrEmpty(item.TeacherName))
+                                                    {
+                                                        <div><i class="bi bi-person-fill text-secondary"></i> @item.TeacherName</div>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(item.Room))
+                                                    {
+                                                        <div><i class="bi bi-geo-alt-fill text-secondary"></i> Room @item.Room</div>
+                                                    }
+                                                    @if (item.StartTime != default)
+                                                    {
+                                                        <div><i class="bi bi-clock-fill text-secondary"></i> @item.StartTime.ToString("hh:mm tt") - @item.EndTime.ToString("hh:mm tt")</div>
+                                                    }
+                                                    else if (!string.IsNullOrEmpty(item.Schedule))
+                                                    {
+                                                        <div><i class="bi bi-clock-fill text-secondary"></i> @item.Schedule</div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="text-muted fst-italic" style="font-size: 0.82rem;">— No classes</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Summary Table -->
+    <div class="card-custom mt-3">
+        <h6 class="mb-3"><i class="bi bi-list-ul me-2"></i>All Enrolled Courses</h6>
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Course Code</th>
+                        <th>Course Name</th>
+                        <th>Teacher</th>
+                        <th>Section</th>
+                        <th>Room</th>
+                        <th>Schedule</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ var idx = 1; }
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@idx</td>
+                            <td><code>@item.CourseCode</code></td>
+                            <td>@item.CourseName</td>
+                            <td>@(item.TeacherName ?? "—")</td>
+                            <td><span class="badge bg-info text-dark">@item.Section</span></td>
+                            <td>@(item.Room ?? "—")</td>
+                            <td>@(item.Schedule ?? "—")</td>
+                        </tr>
+                        idx++;
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System;
+using System.Data;
 
 namespace SmartAttendance.Patterns.Factory
 {
@@ -16,6 +17,13 @@ namespace SmartAttendance.Patterns.Factory
             {
                 content += item.ToString() + "\n";
             }
+            return System.Text.Encoding.UTF8.GetBytes(content);
+        }
+
+        public byte[] Export(DataTable data, string title)
+        {
+            // Simplified PDF export (placeholder)
+            string content = $"PDF Report: {title}\n";
             return System.Text.Encoding.UTF8.GetBytes(content);
         }
     }

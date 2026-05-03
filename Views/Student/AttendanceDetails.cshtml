@@ -1,0 +1,163 @@
+@model SmartAttendance.Models.ViewModels.StudentAttendanceDetailViewModel
+@{
+    ViewData["Title"] = "Attendance Details";
+}
+
+<div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
+    <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div>
+            <h5 class="fw-bold mb-1"><i class="bi bi-person-badge text-primary me-2"></i>@Model.StudentName</h5>
+            <div class="d-flex flex-wrap gap-2 align-items-center mt-2" style="font-size: 0.85rem;">
+                <span class="badge bg-light text-dark border">ID: @Model.StudentCode</span>
+                <span class="text-muted"><i class="bi bi-building"></i> @Model.Department</span>
+                <span class="text-muted"><i class="bi bi-mortarboard"></i> Batch @Model.Batch</span>
+            </div>
+        </div>
+        <a asp-action="Dashboard" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+@if (!Model.Courses.Any())
+{
+    <div class="alert alert-info border-0 shadow-sm" style="border-radius: 10px;">
+        <i class="bi bi-info-circle me-2"></i> You are not enrolled in any courses yet.
+    </div>
+}
+else
+{
+    <h6 class="fw-bold text-muted mb-3 px-1"><i class="bi bi-journals me-2"></i>Course Wise Attendance</h6>
+    @foreach (var course in Model.Courses)
+    {
+        var barColor = course.AttendancePercentage >= 75 ? "#198754" : course.AttendancePercentage >= 60 ? "#ffc107" : "#dc3545";
+
+        <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px; overflow: hidden;">
+            <div style="height: 4px; background: @barColor;"></div>
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge bg-primary" style="font-size: 0.75rem;">@course.CourseCode</span>
+                            <span class="badge bg-light text-dark border" style="font-size: 0.75rem;">Sec @course.Section</span>
+                        </div>
+                        <h6 class="fw-bold mb-0">@course.CourseName</h6>
+                        <small class="text-muted">@course.Semester</small>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-bold fs-4" style="color: @barColor;">@course.AttendancePercentage%</div>
+                        @if (course.IsLowAttendance)
+                        {
+                            <span class="badge bg-danger"><i class="bi bi-exclamation-triangle"></i> Low</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success"><i class="bi bi-check-circle"></i> Good</span>
+                        }
+                    </div>
+                </div>
+
+                <!-- Stats Row -->
+                <div class="row g-2 mb-4">
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 rounded border text-center bg-light">
+                            <div class="fw-bold fs-5 text-primary">@course.TotalClasses</div>
+                            <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Total Classes</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 rounded border text-center" style="background: #f8fff9; border-color: #d1e7dd !important;">
+                            <div class="fw-bold fs-5 text-success">@course.PresentCount</div>
+                            <small class="text-success text-uppercase fw-semibold" style="font-size: 0.7rem;">Present</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 rounded border text-center" style="background: #fffafa; border-color: #f8d7da !important;">
+                            <div class="fw-bold fs-5 text-danger">@course.AbsentCount</div>
+                            <small class="text-danger text-uppercase fw-semibold" style="font-size: 0.7rem;">Absent</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 rounded border text-center" style="background: #fffdf6; border-color: #fff3cd !important;">
+                            <div class="fw-bold fs-5 text-warning">@course.LateCount</div>
+                            <small class="text-warning text-uppercase fw-semibold" style="font-size: 0.7rem;">Late</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="progress mb-3 bg-light border" style="height: 8px; border-radius: 4px;">
+                    <div class="progress-bar" role="progressbar"
+                         style="width: @course.AttendancePercentage%; background-color: @barColor;"
+                         aria-valuenow="@course.AttendancePercentage" aria-valuemin="0" aria-valuemax="100">
+                    </div>
+                </div>
+
+                @if (course.IsLowAttendance)
+                {
+                    <div class="alert alert-danger py-2 mb-3 border-0 d-flex align-items-center" style="border-radius: 8px; font-size: 0.85rem;">
+                        <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i> 
+                        <div><strong>Warning:</strong> Your attendance is below 75%. Please attend classes regularly.</div>
+                    </div>
+                }
+
+                <!-- Date-wise Records -->
+                @if (course.Records.Any())
+                {
+                    <details class="mt-2">
+                        <summary class="btn btn-sm btn-light border text-primary fw-semibold">
+                            <i class="bi bi-calendar3 me-1"></i> View Day-by-Day Records (@course.Records.Count)
+                        </summary>
+                        <div class="table-responsive mt-3">
+                            <table class="table table-hover table-bordered align-middle mb-0" style="font-size: 0.85rem;">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-center" style="width:60px;">#</th>
+                                        <th>Date</th>
+                                        <th>Day</th>
+                                        <th class="text-center" style="width: 120px;">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{ var recIdx = 1; }
+                                    @foreach (var record in course.Records)
+                                    {
+                                        var statusBadge = record.Status switch
+                                        {
+                                            "Present" => "bg-success",
+                                            "Absent" => "bg-danger",
+                                            "Late" => "bg-warning text-dark",
+                                            _ => "bg-secondary"
+                                        };
+                                        var statusIcon = record.Status switch
+                                        {
+                                            "Present" => "bi-check-circle-fill",
+                                            "Absent" => "bi-x-circle-fill",
+                                            "Late" => "bi-clock-fill",
+                                            _ => "bi-question-circle"
+                                        };
+                                        <tr>
+                                            <td class="text-center text-muted">@recIdx</td>
+                                            <td class="fw-medium">@record.Date.ToString("dd MMM yyyy")</td>
+                                            <td class="text-muted">@record.Date.DayOfWeek</td>
+                                            <td class="text-center">
+                                                <span class="badge @statusBadge w-100 py-2">
+                                                    <i class="bi @statusIcon me-1"></i> @record.Status
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        recIdx++;
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                }
+                else
+                {
+                    <p class="text-muted small mb-0"><i class="bi bi-info-circle me-1"></i> No attendance records found yet.</p>
+                }
+            </div>
+        </div>
+    }
+}

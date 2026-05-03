@@ -29,6 +29,7 @@
                     <td>@item.CourseName</td>
                     <td>@item.Section</td>
                     <td>
+                        <a asp-action="EditEnrollment" asp-route-id="@item.EnrollmentId" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil"></i></a>
                         <form asp-action="DeleteEnrollment" asp-route-id="@item.EnrollmentId" method="post" style="display:inline;" onsubmit="return confirm('Remove?');">
                             <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                         </form>

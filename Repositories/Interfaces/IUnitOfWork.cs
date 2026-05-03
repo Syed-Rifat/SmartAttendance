@@ -14,6 +14,7 @@ namespace SmartAttendance.Repositories.Interfaces
         IRepository<Enrollment> Enrollments { get; }
         IRepository<AttendanceRecord> AttendanceRecords { get; }
         IRepository<ActivityLog> ActivityLogs { get; }
+        IRepository<ClassSchedule> ClassSchedules { get; }
 
         Task<int> SaveChangesAsync();
     }

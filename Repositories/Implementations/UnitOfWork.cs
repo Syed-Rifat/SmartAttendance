@@ -18,6 +18,7 @@ namespace SmartAttendance.Repositories.Implementations
         public IRepository<Enrollment> Enrollments { get; private set; }
         public IRepository<AttendanceRecord> AttendanceRecords { get; private set; }
         public IRepository<ActivityLog> ActivityLogs { get; private set; }
+        public IRepository<ClassSchedule> ClassSchedules { get; private set; }
 
         public UnitOfWork(AppDbContext context)
         {
@@ -30,6 +31,7 @@ namespace SmartAttendance.Repositories.Implementations
             Enrollments = new Repository<Enrollment>(_context);
             AttendanceRecords = new Repository<AttendanceRecord>(_context);
             ActivityLogs = new Repository<ActivityLog>(_context);
+            ClassSchedules = new Repository<ClassSchedule>(_context);
         }
 
         public async Task<int> SaveChangesAsync()

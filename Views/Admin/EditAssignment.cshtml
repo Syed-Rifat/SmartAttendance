@@ -1,15 +1,16 @@
 @model SmartAttendance.Models.ViewModels.CourseAssignmentViewModel
 @{
-    ViewData["Title"] = "Assign Course";
+    ViewData["Title"] = "Edit Assignment";
 }
 
 <div class="card-custom">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="mb-0"><i class="bi bi-diagram-3-fill text-info"></i> Assign Course to Teacher</h5>
+        <h5 class="mb-0"><i class="bi bi-pencil-square text-info"></i> Edit Course Assignment</h5>
         <a asp-action="Assignments" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Back</a>
     </div>
 
-    <form asp-action="CreateAssignment" method="post">
+    <form asp-action="EditAssignment" method="post">
+        <input type="hidden" asp-for="AssignmentId" />
         <div asp-validation-summary="ModelOnly" class="alert alert-danger small" style="display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none")"></div>
 
         <div class="border rounded p-3 mb-3" style="background:#f8f9fa;">
@@ -83,7 +84,7 @@
         </div>
 
         <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-info text-white"><i class="bi bi-check-circle"></i> Assign</button>
+            <button type="submit" class="btn btn-info text-white"><i class="bi bi-check-circle"></i> Update Assignment</button>
             <a asp-action="Assignments" class="btn btn-outline-secondary">Cancel</a>
         </div>
     </form>
@@ -136,7 +137,17 @@
                 reIndex();
             });
 
-            addSlot('', '', '');
+            @if (Model.ScheduleSlots != null && Model.ScheduleSlots.Any())
+            {
+                foreach (var slot in Model.ScheduleSlots)
+                {
+                    <text>addSlot('@slot.DayOfWeek', '@slot.StartTime', '@slot.EndTime');</text>
+                }
+            }
+            else
+            {
+                <text>addSlot('', '', '');</text>
+            }
         });
     </script>
 }

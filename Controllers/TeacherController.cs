@@ -32,7 +32,90 @@ namespace SmartAttendance.Controllers
             if (teacher == null) return NotFound();
 
             var assignments = await _uow.CourseAssignments.FindAsync(ca => ca.TeacherId == teacher.TeacherId);
-            return View(assignments);
+            var assignmentList = assignments.ToList();
+
+            var vm = new TeacherOverviewViewModel
+            {
+                TeacherName = teacher.FullName,
+                Department = teacher.Department ?? "",
+                TotalCourses = assignmentList.Count
+            };
+
+            int totalStudents = 0;
+            var today = DateTime.Today.DayOfWeek.ToString(); // "Sunday", "Monday", etc.
+            var assignmentIds = assignmentList.Select(a => a.AssignmentId).ToList();
+            
+            // Get today's schedules
+            var todaySchedules = await _uow.ClassSchedules.FindAsync(cs => 
+                assignmentIds.Contains(cs.AssignmentId) && cs.DayOfWeek == today);
+
+            foreach (var a in assignmentList)
+            {
+                var enrollments = await _uow.Enrollments.FindAsync(e => e.AssignmentId == a.AssignmentId);
+                totalStudents += enrollments.Count();
+            }
+            
+            // Map today's schedules to view models
+            foreach (var schedule in todaySchedules.OrderBy(s => s.StartTime))
+            {
+                var assignment = assignmentList.First(a => a.AssignmentId == schedule.AssignmentId);
+                var course = await _uow.Courses.GetByIdAsync(assignment.CourseId);
+                
+                vm.TodayClasses.Add(new ScheduleItemViewModel
+                {
+                    CourseName = course?.CourseName ?? "",
+                    CourseCode = course?.CourseCode ?? "",
+                    Section = assignment.Section,
+                    Room = assignment.Room ?? "",
+                    StartTime = schedule.StartTime,
+                    EndTime = schedule.EndTime
+                });
+            }
+
+            vm.TotalStudents = totalStudents;
+            return View(vm);
+        }
+
+        public async Task<IActionResult> MyCourses()
+        {
+            var userId = int.Parse(User.FindFirst("UserId").Value);
+            var teacher = (await _uow.Teachers.FindAsync(t => t.UserId == userId)).FirstOrDefault();
+            
+            if (teacher == null) return NotFound();
+
+            var assignments = await _uow.CourseAssignments.FindAsync(ca => ca.TeacherId == teacher.TeacherId);
+            var assignmentList = assignments.ToList();
+
+            var vm = new TeacherDashboardViewModel
+            {
+                TeacherName = teacher.FullName,
+                Department = teacher.Department ?? "",
+                TotalCourses = assignmentList.Count
+            };
+
+            int totalStudents = 0;
+            foreach (var a in assignmentList)
+            {
+                var course = await _uow.Courses.GetByIdAsync(a.CourseId);
+                var enrollments = await _uow.Enrollments.FindAsync(e => e.AssignmentId == a.AssignmentId);
+                var enrolledCount = enrollments.Count();
+                totalStudents += enrolledCount;
+
+                vm.Courses.Add(new TeacherCourseItem
+                {
+                    AssignmentId = a.AssignmentId,
+                    CourseName = course?.CourseName ?? "",
+                    CourseCode = course?.CourseCode ?? "",
+                    Section = a.Section,
+                    Semester = a.Semester,
+                    Room = a.Room,
+                    Schedule = a.Schedule,
+                    EnrolledStudentCount = enrolledCount
+                });
+            }
+
+            vm.TotalStudents = totalStudents;
+            return View(vm);
         }
 
         [HttpGet]
@@ -161,6 +244,100 @@ namespace SmartAttendance.Controllers
             var reportService = HttpContext.RequestServices.GetService(typeof(IReportService)) as IReportService;
             var fileBytes = await reportService.ExportAttendanceReportAsync(assignmentId, "excel");
             return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Attendance_{assignmentId}.xlsx");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> AttendanceHistory(int assignmentId)
+        {
+            var assignment = await _uow.CourseAssignments.GetByIdAsync(assignmentId);
+            if (assignment == null) return NotFound();
+
+            var course = await _uow.Courses.GetByIdAsync(assignment.CourseId);
+            var enrollments = await _uow.Enrollments.FindAsync(e => e.AssignmentId == assignmentId);
+
+            var vm = new TeacherAttendanceSummaryViewModel
+            {
+                AssignmentId = assignmentId,
+                CourseName = course?.CourseName,
+                CourseCode = course?.CourseCode,
+                Section = assignment.Section,
+                Semester = assignment.Semester
+            };
+
+            foreach (var e in enrollments)
+            {
+                var student = await _uow.Students.GetByIdAsync(e.StudentId);
+                var records = await _uow.AttendanceRecords.FindAsync(a => a.EnrollmentId == e.EnrollmentId && a.AssignmentId == assignmentId);
+                var recordList = records.ToList();
+                var totalClasses = recordList.Count;
+                var attended = recordList.Count(r => r.Status == "Present" || r.Status == "Late");
+                var pct = totalClasses > 0 ? Math.Round((decimal)attended / totalClasses * 100, 1) : 0;
+
+                vm.Students.Add(new StudentSummaryItem
+                {
+                    StudentId = student?.StudentId ?? 0,
+                    StudentCode = student?.StudentCode,
+                    FullName = student?.FullName,
+                    TotalClasses = totalClasses,
+                    Attended = attended,
+                    Percentage = pct,
+                    IsLow = pct < 75
+                });
+            }
+
+            return View(vm);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> MySchedule()
+        {
+            var userId = int.Parse(User.FindFirst("UserId").Value);
+            var teacher = (await _uow.Teachers.FindAsync(t => t.UserId == userId)).FirstOrDefault();
+            if (teacher == null) return NotFound();
+
+            var assignments = await _uow.CourseAssignments.FindAsync(ca => ca.TeacherId == teacher.TeacherId);
+            var scheduleItems = new List<ScheduleItemViewModel>();
+
+            foreach (var a in assignments)
+            {
+                var course = await _uow.Courses.GetByIdAsync(a.CourseId);
+                var slots = await _uow.ClassSchedules.FindAsync(cs => cs.AssignmentId == a.AssignmentId);
+
+                // If slots exist, add one item per slot
+                if (slots.Any())
+                {
+                    foreach (var slot in slots)
+                    {
+                        scheduleItems.Add(new ScheduleItemViewModel
+                        {
+                            CourseName = course?.CourseName,
+                            CourseCode = course?.CourseCode,
+                            Section = a.Section,
+                            Semester = a.Semester,
+                            Room = a.Room,
+                            Schedule = a.Schedule, // legacy field
+                            DayOfWeek = slot.DayOfWeek,
+                            StartTime = slot.StartTime,
+                            EndTime = slot.EndTime
+                        });
+                    }
+                }
+                else
+                {
+                    // Fallback for assignments without slots
+                    scheduleItems.Add(new ScheduleItemViewModel
+                    {
+                        CourseName = course?.CourseName,
+                        CourseCode = course?.CourseCode,
+                        Section = a.Section,
+                        Semester = a.Semester,
+                        Room = a.Room,
+                        Schedule = a.Schedule
+                    });
+                }
+            }
+
+            return View(scheduleItems);
         }
     }
 }

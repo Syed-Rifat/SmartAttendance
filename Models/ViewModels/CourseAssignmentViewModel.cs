@@ -26,6 +26,9 @@ namespace SmartAttendance.Models.ViewModels
         public string? Room { get; set; }
         public string? Schedule { get; set; }
 
+        // Schedule slots for multi-day/time entry
+        public List<ScheduleSlotInput> ScheduleSlots { get; set; } = new List<ScheduleSlotInput>();
+
         // For dropdowns — not validated
         public List<SelectListItem>? Teachers { get; set; }
         public List<SelectListItem>? Courses { get; set; }
@@ -34,5 +37,12 @@ namespace SmartAttendance.Models.ViewModels
         public string? TeacherName { get; set; }
         public string? CourseName { get; set; }
         public string? CourseCode { get; set; }
+    }
+
+    public class ScheduleSlotInput
+    {
+        public string DayOfWeek { get; set; } = "";
+        public string StartTime { get; set; } = "";
+        public string EndTime { get; set; } = "";
     }
 }

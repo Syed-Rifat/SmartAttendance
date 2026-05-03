@@ -17,6 +17,7 @@ namespace SmartAttendance.Data
         public DbSet<Enrollment> Enrollments { get; set; }
         public DbSet<AttendanceRecord> AttendanceRecords { get; set; }
         public DbSet<ActivityLog> ActivityLogs { get; set; }
+        public DbSet<ClassSchedule> ClassSchedules { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -110,6 +111,13 @@ namespace SmartAttendance.Data
                 .WithMany()
                 .HasForeignKey(a => a.MarkedByTeacherId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Class Schedules
+            modelBuilder.Entity<ClassSchedule>()
+                .HasOne(cs => cs.CourseAssignment)
+                .WithMany(ca => ca.ClassSchedules)
+                .HasForeignKey(cs => cs.AssignmentId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Activity Logs
             modelBuilder.Entity<ActivityLog>()

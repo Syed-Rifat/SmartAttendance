@@ -461,6 +461,19 @@ namespace SmartAttendance.Controllers
                 }
                 else
                 {
+                    // Generate legacy summary schedule string
+                    string summary = "";
+                    if (model.ScheduleSlots != null && model.ScheduleSlots.Any())
+                    {
+                        summary = string.Join(", ", model.ScheduleSlots
+                            .Where(s => !string.IsNullOrEmpty(s.DayOfWeek) && !string.IsNullOrEmpty(s.StartTime) && !string.IsNullOrEmpty(s.EndTime))
+                            .Select(s => $"{s.DayOfWeek.Substring(0, 3)} {s.StartTime}-{s.EndTime}"));
+                    }
+                    else
+                    {
+                        summary = model.Schedule ?? "";
+                    }
+
                     var assignment = new CourseAssignment
                     {
                         TeacherId = model.TeacherId,
@@ -469,11 +482,33 @@ namespace SmartAttendance.Controllers
                         Semester = model.Semester,
                         AcademicYear = model.AcademicYear,
                         Room = model.Room,
-                        Schedule = model.Schedule
+                        Schedule = summary
                     };
 
                     await _uow.CourseAssignments.AddAsync(assignment);
                     await _uow.SaveChangesAsync();
+
+                    // Save structured slots
+                    if (model.ScheduleSlots != null && model.ScheduleSlots.Any())
+                    {
+                        foreach (var slot in model.ScheduleSlots)
+                        {
+                            if (!string.IsNullOrEmpty(slot.DayOfWeek) && 
+                                TimeOnly.TryParse(slot.StartTime, out var startTime) && 
+                                TimeOnly.TryParse(slot.EndTime, out var endTime))
+                            {
+                                var classSchedule = new ClassSchedule
+                                {
+                                    AssignmentId = assignment.AssignmentId,
+                                    DayOfWeek = slot.DayOfWeek,
+                                    StartTime = startTime,
+                                    EndTime = endTime
+                                };
+                                await _uow.ClassSchedules.AddAsync(classSchedule);
+                            }
+                        }
+                        await _uow.SaveChangesAsync();
+                    }
 
                     TempData["Message"] = "Course Assigned successfully.";
                     return RedirectToAction(nameof(Assignments));
@@ -499,6 +534,112 @@ namespace SmartAttendance.Controllers
                 TempData["Message"] = "Assignment deleted.";
             }
             return RedirectToAction(nameof(Assignments));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditAssignment(int id)
+        {
+            var assignment = await _uow.CourseAssignments.GetByIdAsync(id);
+            if (assignment == null) return NotFound();
+
+            var teachers = await _uow.Teachers.GetAllAsync();
+            var courses = await _uow.Courses.GetAllAsync();
+
+            var existingSlots = await _uow.ClassSchedules.FindAsync(cs => cs.AssignmentId == assignment.AssignmentId);
+
+            var vm = new CourseAssignmentViewModel
+            {
+                AssignmentId = assignment.AssignmentId,
+                TeacherId = assignment.TeacherId,
+                CourseId = assignment.CourseId,
+                Section = assignment.Section,
+                Semester = assignment.Semester,
+                AcademicYear = assignment.AcademicYear,
+                Room = assignment.Room,
+                Schedule = assignment.Schedule,
+                ScheduleSlots = existingSlots.Select(s => new ScheduleSlotInput 
+                { 
+                    DayOfWeek = s.DayOfWeek,
+                    StartTime = s.StartTime.ToString("HH:mm"),
+                    EndTime = s.EndTime.ToString("HH:mm")
+                }).ToList(),
+                Teachers = teachers.Select(t => new SelectListItem { Value = t.TeacherId.ToString(), Text = t.FullName }).ToList(),
+                Courses = courses.Select(c => new SelectListItem { Value = c.CourseId.ToString(), Text = $"{c.CourseCode} - {c.CourseName}" }).ToList()
+            };
+            return View(vm);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditAssignment(CourseAssignmentViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var assignment = await _uow.CourseAssignments.GetByIdAsync(model.AssignmentId);
+                if (assignment == null) return NotFound();
+
+                // Generate legacy summary schedule string
+                string summary = "";
+                if (model.ScheduleSlots != null && model.ScheduleSlots.Any())
+                {
+                    summary = string.Join(", ", model.ScheduleSlots
+                        .Where(s => !string.IsNullOrEmpty(s.DayOfWeek) && !string.IsNullOrEmpty(s.StartTime) && !string.IsNullOrEmpty(s.EndTime))
+                        .Select(s => $"{s.DayOfWeek.Substring(0, 3)} {s.StartTime}-{s.EndTime}"));
+                }
+                else
+                {
+                    summary = model.Schedule ?? "";
+                }
+
+                assignment.TeacherId = model.TeacherId;
+                assignment.CourseId = model.CourseId;
+                assignment.Section = model.Section;
+                assignment.Semester = model.Semester;
+                assignment.AcademicYear = model.AcademicYear;
+                assignment.Room = model.Room;
+                assignment.Schedule = summary;
+
+                _uow.CourseAssignments.Update(assignment);
+                await _uow.SaveChangesAsync();
+
+                // Update slots
+                var existingSlots = await _uow.ClassSchedules.FindAsync(cs => cs.AssignmentId == assignment.AssignmentId);
+                foreach (var oldSlot in existingSlots)
+                {
+                    _uow.ClassSchedules.Remove(oldSlot);
+                }
+                await _uow.SaveChangesAsync();
+
+                if (model.ScheduleSlots != null && model.ScheduleSlots.Any())
+                {
+                    foreach (var slot in model.ScheduleSlots)
+                    {
+                        if (!string.IsNullOrEmpty(slot.DayOfWeek) && 
+                            TimeOnly.TryParse(slot.StartTime, out var startTime) && 
+                            TimeOnly.TryParse(slot.EndTime, out var endTime))
+                        {
+                            var classSchedule = new ClassSchedule
+                            {
+                                AssignmentId = assignment.AssignmentId,
+                                DayOfWeek = slot.DayOfWeek,
+                                StartTime = startTime,
+                                EndTime = endTime
+                            };
+                            await _uow.ClassSchedules.AddAsync(classSchedule);
+                        }
+                    }
+                    await _uow.SaveChangesAsync();
+                }
+
+                TempData["Message"] = "Assignment updated successfully.";
+                return RedirectToAction(nameof(Assignments));
+            }
+
+            // Re-populate dropdowns
+            var teachers = await _uow.Teachers.GetAllAsync();
+            var courses = await _uow.Courses.GetAllAsync();
+            model.Teachers = teachers.Select(t => new SelectListItem { Value = t.TeacherId.ToString(), Text = t.FullName }).ToList();
+            model.Courses = courses.Select(c => new SelectListItem { Value = c.CourseId.ToString(), Text = $"{c.CourseCode} - {c.CourseName}" }).ToList();
+            return View(model);
         }
 
         // ================= ENROLLMENTS =================
@@ -598,6 +739,74 @@ namespace SmartAttendance.Controllers
                 TempData["Message"] = "Enrollment removed.";
             }
             return RedirectToAction(nameof(Enrollments));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditEnrollment(int id)
+        {
+            var e = await _uow.Enrollments.GetByIdAsync(id);
+            if (e == null) return NotFound();
+
+            var students = await _uow.Students.GetAllAsync();
+            var assignments = await _uow.CourseAssignments.GetAllAsync();
+            var assignmentList = new List<SelectListItem>();
+            foreach (var a in assignments)
+            {
+                var course = await _uow.Courses.GetByIdAsync(a.CourseId);
+                assignmentList.Add(new SelectListItem { Value = a.AssignmentId.ToString(), Text = $"{course?.CourseName} ({a.Section}) - {a.Semester}" });
+            }
+
+            var vm = new EnrollmentViewModel
+            {
+                EnrollmentId = e.EnrollmentId,
+                StudentId = e.StudentId,
+                AssignmentId = e.AssignmentId,
+                Students = students.Select(s => new SelectListItem { Value = s.StudentId.ToString(), Text = $"{s.StudentCode} - {s.FullName}" }).ToList(),
+                Assignments = assignmentList
+            };
+            return View(vm);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditEnrollment(EnrollmentViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var e = await _uow.Enrollments.GetByIdAsync(model.EnrollmentId);
+                if (e == null) return NotFound();
+
+                // Check if this student is already enrolled in this assignment (excluding current record)
+                var existing = (await _uow.Enrollments.FindAsync(x => x.StudentId == model.StudentId && x.AssignmentId == model.AssignmentId && x.EnrollmentId != model.EnrollmentId)).FirstOrDefault();
+                if (existing != null)
+                {
+                    ModelState.AddModelError("", "Student is already enrolled in this assignment.");
+                }
+                else
+                {
+                    e.StudentId = model.StudentId;
+                    e.AssignmentId = model.AssignmentId;
+
+                    _uow.Enrollments.Update(e);
+                    await _uow.SaveChangesAsync();
+
+                    TempData["Message"] = "Enrollment updated successfully.";
+                    return RedirectToAction(nameof(Enrollments));
+                }
+            }
+
+            // Re-populate dropdowns
+            var students = await _uow.Students.GetAllAsync();
+            var assignments = await _uow.CourseAssignments.GetAllAsync();
+            var assignmentList = new List<SelectListItem>();
+            foreach (var a in assignments)
+            {
+                var course = await _uow.Courses.GetByIdAsync(a.CourseId);
+                assignmentList.Add(new SelectListItem { Value = a.AssignmentId.ToString(), Text = $"{course?.CourseName} ({a.Section}) - {a.Semester}" });
+            }
+            model.Students = students.Select(s => new SelectListItem { Value = s.StudentId.ToString(), Text = $"{s.StudentCode} - {s.FullName}" }).ToList();
+            model.Assignments = assignmentList;
+
+            return View(model);
         }
 
         [HttpGet]

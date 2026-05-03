@@ -1,0 +1,105 @@
+@model SmartAttendance.Models.ViewModels.TeacherDashboardViewModel
+@{
+    ViewData["Title"] = "My Courses";
+}
+
+<div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
+    <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div>
+            <h5 class="fw-bold mb-1"><i class="bi bi-book text-primary me-2"></i>My Courses</h5>
+            <p class="text-muted mb-0 small">Manage your assigned courses, attendance, and reports.</p>
+        </div>
+        <a asp-action="Dashboard" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+@if (!Model.Courses.Any())
+{
+    <div class="alert alert-info border-0 shadow-sm" style="border-radius: 10px;">
+        <i class="bi bi-info-circle me-2"></i> No courses assigned currently.
+    </div>
+}
+else
+{
+    <h6 class="fw-bold text-muted mb-3 px-1"><i class="bi bi-journals me-2"></i>Your Assigned Courses</h6>
+    <div class="row g-4">
+        @foreach (var course in Model.Courses)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm border-0" style="border-radius: 12px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;"
+                     onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)'"
+                     onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 6px rgba(0,0,0,0.06)'">
+                    <div style="height: 4px; background: #0d6efd;"></div>
+                    <div class="card-body p-4 pb-2">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <span class="badge bg-primary" style="font-size: 0.75rem;">@course.CourseCode</span>
+                            <span class="badge bg-light text-dark border">@course.Semester</span>
+                        </div>
+                        <h6 class="fw-bold mb-3">@course.CourseName</h6>
+
+                        <div class="d-flex flex-column gap-2 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-diagram-3 text-muted me-2"></i>
+                                <span class="text-muted small">Section:</span>
+                                <span class="ms-auto fw-semibold">@course.Section</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-people text-muted me-2"></i>
+                                <span class="text-muted small">Students:</span>
+                                <span class="ms-auto fw-semibold">@course.EnrolledStudentCount</span>
+                            </div>
+                            @if (!string.IsNullOrEmpty(course.Room))
+                            {
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-geo-alt text-muted me-2"></i>
+                                    <span class="text-muted small">Room:</span>
+                                    <span class="ms-auto fw-semibold">@course.Room</span>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(course.Schedule))
+                            {
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-clock text-muted me-2"></i>
+                                    <span class="text-muted small">Schedule:</span>
+                                    <span class="ms-auto fw-semibold" style="font-size: 0.82rem;">@course.Schedule</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="card-footer bg-white border-0 pt-0 pb-4 px-4">
+                        <div class="d-flex flex-column gap-2">
+                            <div class="d-flex gap-2">
+                                <a asp-action="TakeAttendance" asp-route-assignmentId="@course.AssignmentId"
+                                   class="btn btn-primary btn-sm flex-fill fw-medium">
+                                    <i class="bi bi-check2-square"></i> Take
+                                </a>
+                                <form method="get" asp-action="EditAttendance" class="d-flex gap-1 flex-fill" style="min-width: 0;">
+                                    <input type="hidden" name="assignmentId" value="@course.AssignmentId" />
+                                    <input type="date" name="date" class="form-control form-control-sm" style="min-width: 0; flex: 1;" required />
+                                    <button type="submit" class="btn btn-warning btn-sm" title="Edit"><i class="bi bi-pencil-square"></i></button>
+                                </form>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a asp-action="AttendanceHistory" asp-route-assignmentId="@course.AssignmentId"
+                                   class="btn btn-outline-info btn-sm flex-fill">
+                                    <i class="bi bi-clock-history"></i> History
+                                </a>
+                                <a asp-action="LowAttendance" asp-route-assignmentId="@course.AssignmentId"
+                                   class="btn btn-outline-danger btn-sm flex-fill">
+                                    <i class="bi bi-exclamation-triangle"></i> Low
+                                </a>
+                                <a asp-action="ExportAttendance" asp-route-assignmentId="@course.AssignmentId"
+                                   class="btn btn-outline-success btn-sm flex-fill">
+                                    <i class="bi bi-download"></i> Export
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

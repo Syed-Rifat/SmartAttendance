@@ -74,8 +74,20 @@ CREATE TABLE CourseAssignments (
     Semester      NVARCHAR(20) NOT NULL,   -- e.g. "Spring 2025"
     AcademicYear  NVARCHAR(10) NOT NULL,   -- e.g. "2024-25"
     Room          NVARCHAR(20) NULL,
-    Schedule      NVARCHAR(100) NULL,      -- e.g. "Mon/Wed 10:00-11:30"
+    Schedule      NVARCHAR(100) NULL,      -- Auto-generated summary text
     CONSTRAINT UQ_Assignment UNIQUE (TeacherId, CourseId, Section, Semester, AcademicYear)
+);
+GO
+
+-- ============================================================
+-- TABLE 5.1: ClassSchedules (Multiple slots per assignment)
+-- ============================================================
+CREATE TABLE ClassSchedules (
+    ScheduleId    INT IDENTITY(1,1) PRIMARY KEY,
+    AssignmentId  INT          NOT NULL REFERENCES CourseAssignments(AssignmentId) ON DELETE CASCADE,
+    DayOfWeek     NVARCHAR(10) NOT NULL,   -- "Sunday", "Monday", etc.
+    StartTime     TIME         NOT NULL,
+    EndTime       TIME         NOT NULL
 );
 GO
 
@@ -292,5 +304,5 @@ GO
 -- ============================================================
 INSERT INTO Users (Username, Email, PasswordHash, Role)
 VALUES ('admin', 'admin@attendance.edu',
-        '$2a$11$REPLACE_WITH_BCRYPT_HASH', 'Admin');
+    '$2a$11$fDwkruYMjBrT/NHX.CfTXuw8D7EGccNCwMwt2bBPjuVb8UUfXWqZS', 'Admin');
 GO

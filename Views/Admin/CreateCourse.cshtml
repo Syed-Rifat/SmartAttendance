@@ -17,22 +17,22 @@
             <div class="row">
                 <div class="col-md-3 mb-2">
                     <label asp-for="CourseCode" class="form-label small fw-semibold">Course Code <span class="text-danger">*</span></label>
-                    <input asp-for="CourseCode" class="form-control" placeholder="e.g. CSE301" />
+                    <input asp-for="CourseCode" class="form-control" />
                     <span asp-validation-for="CourseCode" class="text-danger small"></span>
                 </div>
                 <div class="col-md-3 mb-2">
                     <label asp-for="CourseName" class="form-label small fw-semibold">Course Name <span class="text-danger">*</span></label>
-                    <input asp-for="CourseName" class="form-control" placeholder="e.g. Database Systems" />
+                    <input asp-for="CourseName" class="form-control" />
                     <span asp-validation-for="CourseName" class="text-danger small"></span>
                 </div>
                 <div class="col-md-3 mb-2">
                     <label asp-for="Department" class="form-label small fw-semibold">Department <span class="text-danger">*</span></label>
-                    <input asp-for="Department" class="form-control" placeholder="e.g. CSE" />
+                    <input asp-for="Department" class="form-control" />
                     <span asp-validation-for="Department" class="text-danger small"></span>
                 </div>
                 <div class="col-md-3 mb-2">
                     <label asp-for="CreditHours" class="form-label small fw-semibold">Credit Hours <span class="text-danger">*</span></label>
-                    <input asp-for="CreditHours" class="form-control" type="number" min="1" max="10" placeholder="e.g. 3" />
+                    <input asp-for="CreditHours" class="form-control" type="number" min="1" max="10" />
                     <span asp-validation-for="CreditHours" class="text-danger small"></span>
                 </div>
             </div>

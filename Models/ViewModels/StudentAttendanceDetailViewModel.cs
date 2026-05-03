@@ -7,6 +7,8 @@ namespace SmartAttendance.Models.ViewModels
     {
         public string StudentName { get; set; }
         public string StudentCode { get; set; }
+        public string Department { get; set; }
+        public string Batch { get; set; }
         public List<CourseAttendanceInfo> Courses { get; set; } = new List<CourseAttendanceInfo>();
     }
 

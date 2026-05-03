@@ -30,7 +30,7 @@ namespace SmartAttendance.Controllers
                 var role = User.FindFirst(ClaimTypes.Role)?.Value;
                 if (role == "Admin") return RedirectToAction("Dashboard", "Admin");
                 if (role == "Teacher") return RedirectToAction("Dashboard", "Teacher");
-                if (role == "Student") return RedirectToAction("MyAttendance", "Student");
+                if (role == "Student") return RedirectToAction("Dashboard", "Student");
             }
             return View();
         }
@@ -77,7 +77,7 @@ namespace SmartAttendance.Controllers
 
                     if (user.Role == "Admin") return RedirectToAction("Dashboard", "Admin");
                     if (user.Role == "Teacher") return RedirectToAction("Dashboard", "Teacher");
-                    if (user.Role == "Student") return RedirectToAction("MyAttendance", "Student");
+                    if (user.Role == "Student") return RedirectToAction("Dashboard", "Student");
                 }
 
                 ModelState.AddModelError("", "Invalid credentials or role mismatch. Please check your login ID, password, and role.");

@@ -35,6 +35,7 @@
                     <td>@item.AcademicYear</td>
                     <td>@item.Room / @item.Schedule</td>
                     <td>
+                        <a asp-action="EditAssignment" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil"></i></a>
                         <form asp-action="DeleteAssignment" asp-route-id="@item.AssignmentId" method="post" style="display:inline;" onsubmit="return confirm('Delete?');">
                             <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                         </form>

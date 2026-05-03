@@ -33,5 +33,6 @@ namespace SmartAttendance.Models.Entities
         public string? Schedule { get; set; }
 
         public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+        public ICollection<ClassSchedule> ClassSchedules { get; set; } = new List<ClassSchedule>();
     }
 }

@@ -1,0 +1,232 @@
+@model SmartAttendance.Models.ViewModels.StudentDashboardViewModel
+@{
+    ViewData["Title"] = "Student Dashboard";
+    var attPct = Model.OverallAttendancePercentage;
+    var attGood = attPct >= 75;
+    var ringColor = attGood ? "#10b981" : attPct >= 60 ? "#f59e0b" : "#ef4444";
+    var ringTrack = "#e5e7eb";
+    var circum = 276.46m;
+    var offset = circum - (circum * attPct / 100);
+}
+
+<style>
+    .att-ring-wrap { position: relative; width: 90px; height: 90px; flex-shrink: 0; }
+    .att-ring-wrap svg { transform: rotate(-90deg); }
+    .att-ring-label {
+        position: absolute; inset: 0;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .att-ring-label .pct { font-size: 1.2rem; font-weight: 800; line-height: 1; }
+    .att-ring-label .sub { font-size: 0.6rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .hero-banner {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border-radius: 14px; padding: 18px 24px; color: #fff;
+        display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .hero-banner .greeting h5 { font-weight: 700; margin-bottom: 2px; font-size: 1.05rem; }
+    .hero-banner .greeting p { color: rgba(255,255,255,.5); font-size: 0.78rem; margin: 0; }
+    .hero-badge { background: rgba(255,255,255,.1); border-radius: 6px; padding: 3px 10px; font-size: 0.72rem; color: rgba(255,255,255,.65); display: inline-flex; align-items: center; gap: 4px; }
+
+    .vital-item {
+        display: flex; align-items: center; gap: 10px;
+        background: #fff; border-radius: 10px; padding: 10px 14px;
+        border: 1px solid #f1f5f9; box-shadow: 0 1px 2px rgba(0,0,0,.03);
+    }
+    .vital-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; flex-shrink: 0; }
+    .vital-label { font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; letter-spacing: .3px; font-weight: 600; }
+    .vital-value { font-size: 0.95rem; font-weight: 700; color: #1e293b; }
+
+    .timeline-entry { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; align-items: center; }
+    .timeline-entry:last-child { border-bottom: none; }
+    .time-pill { background: #eff6ff; color: #3b82f6; font-weight: 700; font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; white-space: nowrap; min-width: 64px; text-align: center; }
+    .timeline-entry .course-name { font-weight: 600; color: #1e293b; font-size: 0.82rem; }
+    .timeline-entry .course-meta { font-size: 0.7rem; color: #94a3b8; }
+    .room-tag { background: #fef3c7; color: #92400e; font-weight: 700; padding: 2px 8px; border-radius: 5px; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 3px; }
+
+    .course-chip {
+        background: #fff; border: 1px solid #f1f5f9; border-radius: 10px;
+        padding: 12px; transition: all .2s; position: relative; overflow: hidden;
+    }
+    .course-chip:hover { box-shadow: 0 3px 12px rgba(0,0,0,.07); transform: translateY(-1px); }
+    .course-chip .accent-bar { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+    .course-chip .chip-pct { font-size: 1.1rem; font-weight: 800; }
+    .course-chip .chip-label { font-size: 0.68rem; color: #94a3b8; }
+
+    .panel { background: #fff; border-radius: 12px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.04); margin-bottom: 16px; }
+    .panel-title { font-weight: 700; font-size: 0.85rem; color: #1e293b; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+    .panel-title i { font-size: 0.9rem; }
+
+    .qlink {
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px 14px; border-radius: 8px; border: 1px solid #f1f5f9;
+        text-decoration: none; color: #475569; font-size: 0.8rem; font-weight: 500;
+        transition: all .2s; background: #fafbfc;
+    }
+    .qlink:hover { background: #f1f5f9; color: #1e293b; transform: translateX(3px); }
+    .qlink i { font-size: 1rem; }
+
+    .empty-day { text-align: center; padding: 20px 12px; background: #fafbfc; border-radius: 10px; border: 2px dashed #e2e8f0; }
+    .empty-day i { font-size: 1.8rem; color: #cbd5e1; }
+    .empty-day p { color: #94a3b8; font-size: 0.8rem; margin: 6px 0 0; }
+</style>
+
+<!-- ═══ HERO ═══ -->
+<div class="hero-banner mb-3">
+    <div class="greeting">
+        <h5><i class="bi bi-mortarboard me-2" style="opacity:.35"></i>@Model.StudentName</h5>
+        <p>
+            <span class="hero-badge"><i class="bi bi-hash"></i>@Model.StudentCode</span>
+            @if (!string.IsNullOrEmpty(Model.Department)) { <span class="hero-badge ms-1"><i class="bi bi-building"></i>@Model.Department</span> }
+            @if (!string.IsNullOrEmpty(Model.Batch)) { <span class="hero-badge ms-1"><i class="bi bi-calendar3"></i>Batch @Model.Batch</span> }
+        </p>
+    </div>
+    <div class="att-ring-wrap">
+        <svg width="90" height="90" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="44" fill="none" stroke="@ringTrack" stroke-width="7" />
+            <circle cx="50" cy="50" r="44" fill="none" stroke="@ringColor" stroke-width="7"
+                    stroke-dasharray="@circum" stroke-dashoffset="@offset" stroke-linecap="round" />
+        </svg>
+        <div class="att-ring-label">
+            <span class="pct" style="color: @ringColor">@attPct%</span>
+            <span class="sub">attendance</span>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ VITALS ═══ -->
+<div class="row g-2 mb-3">
+    <div class="col-md-4 col-4">
+        <div class="vital-item">
+            <div class="vital-icon" style="background:#eff6ff;color:#3b82f6;"><i class="bi bi-book-half"></i></div>
+            <div>
+                <div class="vital-label">Courses</div>
+                <div class="vital-value">@Model.TotalEnrolledCourses</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-4">
+        <div class="vital-item">
+            <div class="vital-icon" style="background:#ecfdf5;color:#10b981;"><i class="bi bi-check2-all"></i></div>
+            <div>
+                <div class="vital-label">Attended</div>
+                <div class="vital-value">@Model.TotalClassesAttended<span style="font-weight:400;color:#94a3b8;font-size:.75rem">/@Model.TotalClassesConducted</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-4">
+        <div class="vital-item" style="@(Model.LowAttendanceCourseCount > 0 ? "border-color:#fecaca;" : "")">
+            <div class="vital-icon" style="background:@(Model.LowAttendanceCourseCount > 0 ? "#fef2f2" : "#f8fafc");color:@(Model.LowAttendanceCourseCount > 0 ? "#ef4444" : "#94a3b8");"><i class="bi bi-exclamation-triangle"></i></div>
+            <div>
+                <div class="vital-label">Low Att.</div>
+                <div class="vital-value @(Model.LowAttendanceCourseCount > 0 ? "text-danger" : "")">@Model.LowAttendanceCourseCount</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.LowAttendanceCourseCount > 0)
+{
+    <div class="d-flex align-items-center gap-2 px-3 py-2 mb-3" style="background:#fef2f2;border-radius:8px;border-left:3px solid #ef4444;font-size:0.8rem;">
+        <i class="bi bi-shield-exclamation text-danger"></i>
+        <span style="color:#991b1b;"><strong>Heads up —</strong> @Model.LowAttendanceCourseCount course(s) below 75% threshold.</span>
+    </div>
+}
+
+<!-- ═══ MAIN 2-COL ═══ -->
+<div class="row g-3">
+    <div class="col-lg-8">
+        <!-- Today -->
+        <div class="panel">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="panel-title mb-0"><i class="bi bi-sun text-warning"></i> Today — @DateTime.Today.ToString("ddd, MMM d")</div>
+                <a asp-action="MyTimetable" class="small text-decoration-none text-primary fw-semibold" style="font-size:.75rem;">Full week →</a>
+            </div>
+            @if (!Model.TodayClasses.Any())
+            {
+                <div class="empty-day">
+                    <i class="bi bi-emoji-sunglasses"></i>
+                    <p>No classes today!</p>
+                </div>
+            }
+            else
+            {
+                @foreach (var cls in Model.TodayClasses)
+                {
+                    <div class="timeline-entry">
+                        <div class="time-pill">@cls.StartTime.ToString("hh:mm tt")</div>
+                        <div style="flex:1;min-width:0;">
+                            <div class="course-name">@cls.CourseName</div>
+                            <div class="course-meta">
+                                @cls.CourseCode · Sec @cls.Section · Until @cls.EndTime.ToString("hh:mm tt")
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(cls.Room))
+                        {
+                            <span class="room-tag"><i class="bi bi-geo-alt-fill"></i> @cls.Room</span>
+                        }
+                    </div>
+                }
+            }
+        </div>
+
+        <!-- Courses -->
+        <div class="panel">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="panel-title mb-0"><i class="bi bi-bar-chart-line text-primary"></i> Course Performance</div>
+                <a asp-action="AttendanceDetails" class="small text-decoration-none text-primary fw-semibold" style="font-size:.75rem;">Details →</a>
+            </div>
+            <div class="row g-2">
+                @foreach (var c in Model.CourseStats)
+                {
+                    var chipColor = c.AttendancePercentage >= 75 ? "#10b981" : c.AttendancePercentage >= 60 ? "#f59e0b" : "#ef4444";
+                    <div class="col-md-6">
+                        <div class="course-chip">
+                            <div class="accent-bar" style="background:@chipColor;"></div>
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <div style="min-width:0;">
+                                    <div class="fw-bold text-truncate" style="font-size:0.82rem;color:#1e293b;">@c.CourseName</div>
+                                    <div style="font-size:0.68rem;color:#94a3b8;">@c.CourseCode · @c.Section</div>
+                                </div>
+                                <div class="chip-pct ms-2" style="color:@chipColor;">@c.AttendancePercentage%</div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="progress flex-grow-1" style="height:4px;background:#f1f5f9;">
+                                    <div class="progress-bar" style="width:@c.AttendancePercentage%;background:@chipColor;"></div>
+                                </div>
+                                <span class="chip-label">@c.PresentCount/@c.TotalClasses</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ SIDEBAR ═══ -->
+    <div class="col-lg-4">
+        <!-- Date -->
+        <div class="panel text-center" style="background:linear-gradient(135deg,#1e293b,#334155);color:#fff;padding:14px;">
+            <div class="fw-bold" style="font-size:0.85rem;">@DateTime.Today.ToString("dddd")</div>
+            <div style="font-size:1.8rem;font-weight:800;letter-spacing:-1px;line-height:1.1;">@DateTime.Today.ToString("dd MMM")</div>
+            <div style="font-size:0.72rem;color:rgba(255,255,255,.45);">@DateTime.Today.ToString("yyyy")</div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="panel">
+            <div class="panel-title"><i class="bi bi-lightning-charge text-warning"></i> Quick Actions</div>
+            <div class="d-grid gap-2">
+                <a asp-action="AttendanceDetails" class="qlink">
+                    <i class="bi bi-clipboard-data text-success"></i>
+                    <span>Attendance History</span>
+                    <i class="bi bi-chevron-right ms-auto" style="font-size:.7rem;color:#cbd5e1;"></i>
+                </a>
+                <a asp-action="MyTimetable" class="qlink">
+                    <i class="bi bi-calendar-week text-primary"></i>
+                    <span>Weekly Timetable</span>
+                    <i class="bi bi-chevron-right ms-auto" style="font-size:.7rem;color:#cbd5e1;"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
